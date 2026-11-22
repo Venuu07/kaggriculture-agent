@@ -1,0 +1,36 @@
+variant,seed,profit,delta_vs_full
+Full system,0,98156,0
+Full system,1,82065,0
+Full system,2,78757,0
+Full system,3,80254,0
+Full system,4,104737,0
+No team (single agent),0,81188,-16968
+No team (single agent),1,80233,-1832
+No team (single agent),2,61166,-17591
+No team (single agent),3,69945,-10309
+No team (single agent),4,104187,-550
+No look-ahead,0,70546,-27610
+No look-ahead,1,70004,-12061
+No look-ahead,2,51741,-27016
+No look-ahead,3,66385,-13869
+No look-ahead,4,57729,-47008
+No glut-awareness,0,78744,-19412
+No glut-awareness,1,78818,-3247
+No glut-awareness,2,71264,-7493
+No glut-awareness,3,70084,-10170
+No glut-awareness,4,98271,-6466
+No animals,0,71897,-26259
+No animals,1,77539,-4526
+No animals,2,72998,-5759
+No animals,3,72873,-7381
+No animals,4,63720,-41017
+No land expansion,0,61442,-36714
+No land expansion,1,65371,-16694
+No land expansion,2,62518,-16239
+No land expansion,3,63102,-17152
+No land expansion,4,77788,-26949
+Small workforce (max 4 hands),0,90977,-7179
+Small workforce (max 4 hands),1,81422,-643
+Small workforce (max 4 hands),2,73751,-5006
+Small workforce (max 4 hands),3,71470,-8784
+Small workforce (max 4 hands),4,105125,388

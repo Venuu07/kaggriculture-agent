@@ -17,6 +17,8 @@ def crop_mix(obs: dict[str, Any], plots: int, params: dict[str, float] | None = 
     """Allocate `plots` free plots one at a time to the crop with the best *marginal* profit per
     plot-day, so each extra plot of the same crop accounts for the price drop it causes."""
     params = params or {}
+    if params.get("naive_mix"):
+        return naive_mix(obs, plots)
     counts = {c: 0 for c in kg.CROPS}
     cache: dict[tuple[str, int], float] = {}
 
@@ -39,6 +41,17 @@ def crop_mix(obs: dict[str, Any], plots: int, params: dict[str, float] | None = 
             break
         counts[best] += 1
     return {c: n for c, n in counts.items() if n}
+
+
+def naive_mix(obs: dict[str, Any], plots: int) -> dict[str, int]:
+    """Ablation: every plot goes to the crop with the best single-plot margin (ignores our own glut)."""
+    best, best_v = None, 0.0
+    for crop in kg.CROPS:
+        est = estimate_crop_profit(crop, obs, 1)
+        v = est["expected_profit"] / est["days_to_harvest"]
+        if est["feasible"] and v > best_v:
+            best, best_v = crop, v
+    return {best: plots} if best and plots > 0 else {}
 
 
 def sell_orders(obs: dict[str, Any], floor_frac: float = 0.65) -> dict[str, Any]:
@@ -133,7 +146,7 @@ def strategic_plan(obs: dict[str, Any], params: dict[str, float] | None = None,
             spend += k * seed
     plan["sell"] = sell_orders(obs, params.get("sell_floor", 0.65))
     plan["fertilise"] = fertiliser_targets(obs)
-    plan["hands"] = min(MAX_HANDS, hands_needed(obs, sum(plan["plant"].values()) + sum(plan.get("buy_animals", {}).values()))
+    plan["hands"] = min(int(params.get("hands_cap", MAX_HANDS)), MAX_HANDS, hands_needed(obs, sum(plan["plant"].values()) + sum(plan.get("buy_animals", {}).values()))
                         + int(params.get("hands_bonus", 0)))
     return plan
 

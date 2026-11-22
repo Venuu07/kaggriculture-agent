@@ -65,7 +65,8 @@ class LLMAgent(Agent):
     """ReAct agent. `multi=True` switches on the specialist team; `reflection=True` learns across seasons."""
 
     def __init__(self, provider: Provider | str | None = None, multi: bool = False, reflection: bool = True,
-                 memory_path: Path | None = None) -> None:
+                 memory_path: Path | None = None, overrides: dict[str, Any] | None = None,
+                 tag: str = "") -> None:
         self.provider = provider if isinstance(provider, Provider) else get_provider(provider)
         self.multi = multi
         self.reflection = reflection
@@ -75,7 +76,8 @@ class LLMAgent(Agent):
         self.provider.temperature = float(cfg["temperature"])
         mode = "multi" if multi else "single"
         self.name = f"llm_{mode}"
-        self.label = f"LLM {mode}-agent ({self.provider.name})"
+        self.overrides = dict(overrides or {})
+        self.label = f"LLM {mode}-agent ({self.provider.name})" + (f" · {tag}" if tag else "")
         self.ltm = LongTermMemory(f"{mode}_{self.provider.name}", memory_path)
         self.stm = ShortTermMemory()
         self.episode = 0
@@ -84,7 +86,7 @@ class LLMAgent(Agent):
     def begin_episode(self, seed: int) -> None:
         self.stm = ShortTermMemory()
         self.seed = seed
-        self.params = self.ltm.params() if self.reflection else {}
+        self.params = {**(self.ltm.params() if self.reflection else {}), **self.overrides}
         self.lessons_text = self.ltm.render() if self.reflection else "(reflection disabled)"
 
     def after_step(self, info: dict[str, Any], reward: float) -> None:

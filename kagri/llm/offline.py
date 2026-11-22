@@ -69,9 +69,13 @@ class OfflineReasoner(Provider):
     # --------------------------------------------------------------- roles
     def _candidates(self, ctx: dict[str, Any]) -> list[tuple[str, dict[str, Any]]]:
         obs, params = ctx["obs"], ctx.get("params") or {}
-        cands = [("expand", strategic_plan(obs, params)),
-                 ("no land", strategic_plan(obs, params, land=False)),
+        land_ok = params.get("allow_land", True)
+        animals_ok = params.get("allow_animals", True)
+        cands = [("expand", strategic_plan(obs, params, land=land_ok, animals=animals_ok)),
+                 ("no land", strategic_plan(obs, params, land=False, animals=animals_ok)),
                  ("crops only", strategic_plan(obs, params, land=False, animals=False))]
+        if params.get("no_lookahead"):
+            cands = cands[:1]
         uniq: list[tuple[str, dict[str, Any]]] = []
         for name, plan in cands:
             if all(plan != p for _, p in uniq):
@@ -82,6 +86,11 @@ class OfflineReasoner(Provider):
         obs, steps = ctx["obs"], ctx["steps"]
         n = len(steps)
         cands = self._candidates(ctx)[:2]
+        if (ctx.get("params") or {}).get("no_lookahead") and n == 0:
+            plan = dict(cands[0][1])
+            note = _weather_adjust(plan, obs)
+            return _say(f"Day {obs['day']}: no look-ahead (ablation). Taking the default plan: {_brief(plan)}. {note}".strip(),
+                        "take_action", {"plan": plan})
         if n == 0:
             return _say(f"Day {obs['day']}: ${obs['cash']:.0f} cash, {obs['free_plots']} free plots, "
                         f"{sum(obs['crops_growing'].values())} plants growing. First, the weather.",
@@ -175,10 +184,12 @@ class OfflineReasoner(Provider):
             conflict = f" Conflict: {merged.get('hands', 0)} hands cannot tend {new_work} new tiles; raising to {need}."
             merged["hands"] = need
         lean = {k: v for k, v in merged.items() if k not in ("buy_land", "buy_animals")}
-        if not steps:
+        if not steps and not params.get("no_lookahead"):
             return _say(f"Planner: {_brief(props.get('planner') or {})}. Market: {_brief(props.get('market') or {})}. "
                         f"Agronomist: {_brief(props.get('agronomist') or {})}.{conflict} Check the merged plan.",
                         "simulate_action", {"plan": merged, "days": 8})
+        if (ctx.get("params") or {}).get("no_lookahead"):
+            return _say(f"Merged plan approved without look-ahead (ablation).{conflict}", "take_action", {"plan": merged})
         if len(steps) == 1 and lean != merged:
             return _say("Sanity check: the same plan without new investments.", "simulate_action",
                         {"plan": lean, "days": 8})

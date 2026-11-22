@@ -1,0 +1,8 @@
+variant,mean_profit,std_profit,mean_delta,seeds_worse,removes,delta_pct
+Full system,88794.0,11840.0,0.0,0,"multi-agent team, look-ahead, glut-aware mix, land, animals",0.0
+No team (single agent),79344.0,16126.0,-9450.0,5,one ReAct agent instead of four roles,-10.6
+No look-ahead,63281.0,8240.0,-25513.0,5,plans are never simulated before acting,-28.7
+No glut-awareness,79436.0,11290.0,-9358.0,5,all plots go to the best single-plot crop,-10.5
+No animals,71805.0,5020.0,-16988.0,5,"never buys geese, cows or sheep",-19.1
+No land expansion,66044.0,6720.0,-22750.0,5,stays on the first 5x5 field,-25.6
+Small workforce (max 4 hands),84549.0,13803.0,-4245.0,4,labour capped at 4 hired hands,-4.8

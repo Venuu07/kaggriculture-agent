@@ -28,7 +28,9 @@ def _style(ax: plt.Axes, title: str) -> None:
 
 
 def _money(v: float) -> str:
-    return f"${v / 1000:.1f}k" if abs(v) >= 1000 else f"${v:.0f}"
+    sign = "−" if v < 0 else ""
+    a = abs(v)
+    return f"{sign}${a / 1000:.1f}k" if a >= 1000 else f"{sign}${a:.0f}"
 
 
 def _save(fig: plt.Figure, path: Path) -> None:
@@ -126,3 +128,22 @@ def draw_all(df: pd.DataFrame, refl: pd.DataFrame, out: Path) -> None:
     reflection_curve(refl, out)
     action_distribution(df, out)
     cost_latency(df, out)
+
+
+def ablation_chart(summary: pd.DataFrame, out: Path) -> None:
+    """Horizontal bars: profit change when one component is removed (vs the full system)."""
+    s = summary[summary["variant"] != "Full system"].sort_values("mean_delta")
+    full = summary.loc[summary["variant"] == "Full system", "mean_profit"].iloc[0]
+    fig, ax = plt.subplots(figsize=(8, 0.55 * len(s) + 1.6))
+    ax.barh(range(len(s)), s["mean_delta"], color=COLORS["greedy"], height=0.55, edgecolor=SURFACE, linewidth=2)
+    for i, (d, p) in enumerate(zip(s["mean_delta"], s["delta_pct"])):
+        ax.text(d, i, f"  {_money(d)}  ({p:+.0f}%)", va="center", ha="left", fontsize=9, color="#fff",
+                fontweight="bold")
+    ax.set_yticks(range(len(s)), s["variant"], fontsize=9)
+    ax.invert_yaxis()
+    ax.axvline(0, color=MUTED, linewidth=1)
+    ax.set_xlabel(f"Profit change vs full system (mean {_money(full)})", color=MUTED)
+    _style(ax, "Ablation: what each component is worth")
+    ax.grid(axis="x", color=GRID, linewidth=0.8)
+    ax.grid(axis="y", visible=False)
+    _save(fig, out / "ablation.png")
