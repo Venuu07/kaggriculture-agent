@@ -1,0 +1,32 @@
+[
+  {
+    "episode": 1,
+    "seed": 10,
+    "profit": 56434,
+    "lessons": [
+      "Stayed on one 5x5 field all season and ended with $56,434 profit. More land means more plots: buy the next quadrant once cash allows. (verified: +30% on validation seasons)"
+    ],
+    "params": {
+      "allow_animals": false,
+      "allow_land": true
+    },
+    "tried": [
+      {
+        "hypothesis": "animals",
+        "val_gain_pct": 3.4
+      },
+      {
+        "hypothesis": "land",
+        "val_gain_pct": 30.0
+      },
+      {
+        "hypothesis": "lookahead",
+        "val_gain_pct": 0.0
+      },
+      {
+        "hypothesis": "patience",
+        "val_gain_pct": 0.2
+      }
+    ]
+  }
+]

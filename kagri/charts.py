@@ -179,3 +179,19 @@ def arena_chart(table: pd.DataFrame, out: Path) -> None:
                frameon=False, fontsize=9)
     _style(ax2, "Price of competition on a shared market")
     _save(fig, out / "arena.png")
+
+
+def verified_reflection_chart(df: pd.DataFrame, out: Path) -> None:
+    """Held-out test profit after each season of verified reflection, annotated with the lesson adopted."""
+    fig, ax = plt.subplots(figsize=(9, 4.5))
+    ax.plot(df["season"], df["test_profit"], color=COLORS["llm_multi"], linewidth=2, marker="o", markersize=8)
+    for s, v, a in zip(df["season"], df["test_profit"], df["adopted"]):
+        tag = "no lesson passed" if a == "none" else a if a.startswith("(") else f"learned: {a}"
+        ax.annotate(f"{_money(v)}\n{tag}", (s, v), textcoords="offset points", xytext=(0, 10), ha="center",
+                    fontsize=8, color=INK)
+    ax.set_xticks(list(df["season"]))
+    ax.set_xlabel("Training season (lesson adopted only if it wins on validation seasons)", color=MUTED)
+    ax.set_ylabel("Profit on held-out test seasons", color=MUTED)
+    ax.set_ylim(df["test_profit"].min() * 0.85, df["test_profit"].max() * 1.15)
+    _style(ax, "Verified reflection: learning across seasons")
+    _save(fig, out / "reflection_verified.png")

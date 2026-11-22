@@ -97,6 +97,44 @@ def results() -> dict[str, Any]:
             "charts": charts}
 
 
+@app.get("/api/research")
+def research() -> dict[str, Any]:
+    """Ablation study and Arena tournament results."""
+    def read(name: str) -> list[dict[str, Any]]:
+        p = RESULTS_DIR / name
+        if not p.exists():
+            return []
+        with p.open(encoding="utf-8") as f:
+            return [_coerce(r) for r in csv.DictReader(f)]
+
+    return {"ablation": read("ablation.csv"), "arena": read("arena_ratings.csv"),
+            "matrix": read("arena_matrix.csv"), "reflection": read("reflection_verified.csv")}
+
+
+@app.get("/api/arena/matches")
+def arena_matches() -> list[str]:
+    return sorted(p.stem for p in RUNS_DIR.glob("arena_*.jsonl"))
+
+
+@app.get("/api/arena/matches/{name}")
+def arena_match(name: str) -> dict[str, Any]:
+    path = RUNS_DIR / f"{Path(name).name}.jsonl"
+    if not path.exists():
+        raise HTTPException(404, f"match {name} not found")
+    out: dict[str, Any] = {"header": {}, "days": [], "summary": {}}
+    with path.open(encoding="utf-8") as f:
+        for line in f:
+            rec = json.loads(line)
+            kind = rec.get("type")
+            if kind == "arena_header":
+                out["header"] = rec
+            elif kind == "arena_day":
+                out["days"].append(rec)
+            elif kind == "arena_summary":
+                out["summary"] = rec
+    return out
+
+
 @app.get("/api/memory")
 def memory() -> list[dict[str, Any]]:
     out = []

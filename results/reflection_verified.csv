@@ -1,0 +1,6 @@
+season,test_profit,adopted,lesson,tried
+0,53273,(novice start),,
+1,67626,land,"Stayed on one 5x5 field all season and ended with $56,434 profit. More land means more plots: buy the next quadrant once cash allows.","[{""hypothesis"": ""animals"", ""val_gain_pct"": 3.4}, {""hypothesis"": ""land"", ""val_gain_pct"": 30.0}, {""hypothesis"": ""lookahead"", ""val_gain_pct"": 0.0}, {""hypothesis"": ""patience"", ""val_gain_pct"": 0.2}]"
+2,67626,none,no candidate improved validation profit,"[{""hypothesis"": ""animals"", ""val_gain_pct"": 0.4}, {""hypothesis"": ""labour"", ""val_gain_pct"": 0.9}, {""hypothesis"": ""lookahead"", ""val_gain_pct"": -0.8}, {""hypothesis"": ""patience"", ""val_gain_pct"": -0.3}]"
+3,67626,none,no candidate improved validation profit,"[{""hypothesis"": ""animals"", ""val_gain_pct"": 0.4}, {""hypothesis"": ""glut"", ""val_gain_pct"": -1.9}, {""hypothesis"": ""labour"", ""val_gain_pct"": 0.9}, {""hypothesis"": ""lookahead"", ""val_gain_pct"": -0.8}, {""hypothesis"": ""patience"", ""val_gain_pct"": -0.3}]"
+4,67626,none,no candidate improved validation profit,"[{""hypothesis"": ""animals"", ""val_gain_pct"": 0.4}, {""hypothesis"": ""glut"", ""val_gain_pct"": -1.9}, {""hypothesis"": ""labour"", ""val_gain_pct"": 0.9}, {""hypothesis"": ""lookahead"", ""val_gain_pct"": -0.8}, {""hypothesis"": ""patience"", ""val_gain_pct"": -0.3}]"
