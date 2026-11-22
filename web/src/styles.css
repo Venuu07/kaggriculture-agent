@@ -424,3 +424,32 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .real-badge { margin-left: 8px; color: var(--t-blue); font-size: 11px; padding: 0 7px; }
 .bar-cell { width: 22%; }
 .bar-cell span { display: block; height: 8px; border-radius: 4px; }
+
+/* -------------------------------------------------------------------- play */
+.play { display: flex; flex-direction: column; gap: 16px; }
+.play-start { max-width: 880px; margin: 10px auto; padding: 30px 34px; }
+.play-title { font-size: 38px; font-weight: 500; font-variation-settings: "opsz" 120; margin: 6px 0 10px; }
+.play-start > p { font-size: 15px; max-width: 700px; }
+.play-cfg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 20px 0; }
+.play-cfg label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--ink-2); font-weight: 500; }
+.big-btn { padding: 12px 26px; font-size: 15px; }
+.tips { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--line); display: grid; grid-template-columns: 1fr 1fr; gap: 6px 20px; font-size: 13px; color: var(--ink-2); }
+.tips > div:first-child { grid-column: 1 / -1; }
+.scoreboard { display: grid; grid-template-columns: 1fr 1.4fr 1fr; align-items: center; gap: 16px; }
+.sb-num { font-family: var(--serif); font-size: 34px; font-weight: 520; font-variant-numeric: lining-nums tabular-nums; line-height: 1.1; }
+.sb-side.right { text-align: right; }
+.sb-mid { text-align: center; }
+.sb-lead { font-family: var(--serif); font-size: 22px; font-weight: 520; margin-top: 4px; }
+.planner-actions { display: flex; gap: 8px; }
+.budget { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; font-size: 13px; margin-bottom: 14px; }
+.budget .bar { height: 8px; background: var(--surface-2); border-radius: 4px; overflow: hidden; border: 1px solid var(--line); }
+.budget .bar i { display: block; height: 100%; transition: width 0.25s; }
+.planner-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; }
+.table.compact td { padding: 5px 6px; }
+.stepper { display: inline-flex; align-items: center; gap: 4px; }
+.stepper button { width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--line-strong); background: var(--surface); }
+.stepper button.five { width: auto; padding: 0 6px; font-size: 11px; color: var(--muted); }
+.stepper span { min-width: 22px; text-align: center; font-variant-numeric: tabular-nums; font-weight: 600; }
+.season-over.big { text-align: center; padding: 26px; }
+.season-over.big h2 { font-size: 30px; font-weight: 520; margin-bottom: 6px; }
+@media (max-width: 1100px) { .planner-grid, .scoreboard, .play-cfg, .tips { grid-template-columns: 1fr; } .sb-side.right, .sb-mid { text-align: left; } }

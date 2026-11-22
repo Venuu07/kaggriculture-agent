@@ -73,3 +73,14 @@ export interface RealRun {
   llm_calls: number; tokens: number; cost_usd: number; fallback_days: number; tool_calls: number;
   days_with_tools: number; simulations: number; guardrails: number; minutes: number;
 }
+
+export interface Advice {
+  crops: { crop: string; seed: number; days: number; profit_per_plot: number; feasible: boolean; price: number }[];
+  animals: { animal: string; cost: number; product: string }[];
+  cash: number; free_plots: number; shed: Record<string, number>; next_land_cost: number | null; days_left: number; growing: number;
+}
+export interface PlayDay {
+  done: boolean; day: number; events: Weather; states: FarmState[]; advice: Advice | null;
+  you: { plan: Plan; rejected: string[]; reward: number };
+  ai: { day: number; trace: TraceStep[]; plan: Plan; rejected: string[]; reward: number; tokens: number; latency_s: number; llm_calls: number; fallback: boolean };
+}

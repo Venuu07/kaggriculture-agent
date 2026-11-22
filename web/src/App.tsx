@@ -5,13 +5,14 @@ import { ArenaView } from "./components/ArenaView";
 import { FarmGrid } from "./components/FarmGrid";
 import { HowItWorks } from "./components/HowItWorks";
 import { MindFeed } from "./components/MindFeed";
+import { PlayView } from "./components/PlayView";
 import { PlanChips } from "./components/PlanChips";
 import { ResearchView } from "./components/ResearchView";
 import { ResultsView } from "./components/ResultsView";
 import { WEATHER_ICON, agentColor as colorOf, money, titleCase } from "./constants";
 import type { DayRecord, FarmState, ProviderInfo, RunHeader, RunInfo, WeatherSeason } from "./types";
 
-type Tab = "farm" | "mind" | "arena" | "research" | "results" | "how";
+type Tab = "farm" | "mind" | "play" | "arena" | "research" | "results" | "how";
 type Mode = "replay" | "live";
 
 const AGENTS = [
@@ -173,7 +174,11 @@ export default function App() {
           <div>
             <h1>Agentic AI for <em>farm profit</em> maximisation</h1>
             <div className="sub">
-              {header ? (
+              {tab !== "farm" && tab !== "mind" ? (
+                <span className="muted">{{ play: "You against the AI on one shared market.", arena: "Recorded head-to-head match.",
+                  research: "Five research questions, each reproducible with one command.", results: "Evaluation over five seeds.",
+                  how: "Architecture and agent design.", scenarios: "Stress-test the agent with a crisis.", shop: "The same agent brain, running a shop." }[tab as string] ?? ""}</span>
+              ) : header ? (
                 <>
                   <span className="badge" style={{ color: agentColor }}><i className="d" /><span style={{ color: "var(--ink)" }}>{header.label}</span></span>
                   <span className="badge gray">seed {header.seed}</span>
@@ -187,7 +192,7 @@ export default function App() {
             </div>
           </div>
           <nav className="tabs">
-            {([["farm", "Live farm"], ["mind", "Agent's mind"], ["arena", "Arena"], ["research", "Research"], ["results", "Results"], ["how", "How it works"]] as [Tab, string][]).map(([k, l]) => (
+            {([["farm", "Live farm"], ["mind", "Agent's mind"], ["play", "Play vs AI"], ["arena", "Arena"], ["research", "Research"], ["results", "Results"], ["how", "How it works"]] as [Tab, string][]).map(([k, l]) => (
               <button key={k} className={tab === k ? "on" : ""} onClick={() => setTab(k)}>{l}</button>
             ))}
           </nav>
@@ -265,6 +270,7 @@ export default function App() {
               </div>
             </div>
           )}
+          {tab === "play" && <PlayView seasons={seasons} />}
           {tab === "arena" && <ArenaView speed={speed} />}
           {tab === "research" && <ResearchView />}
           {tab === "results" && <ResultsView />}

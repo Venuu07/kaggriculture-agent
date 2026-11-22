@@ -31,6 +31,7 @@ from . import MEMORY_DIR, RESULTS_DIR, ROOT, RUNS_DIR
 from .evaluate import make_agent
 from .env import FarmEnv
 from .llm.providers import provider_ready
+from .play import router as play_router
 from .runner import load_run, snapshot
 
 WEB_DIST = ROOT / "web" / "dist"
@@ -40,6 +41,7 @@ AGENTS = {"random": "Random", "greedy": "Greedy heuristic", "llm_single": "LLM s
 
 app = FastAPI(title="Kaggriculture Agent API")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app.include_router(play_router)
 
 _sessions: dict[str, dict[str, Any]] = {}
 _lock = threading.Lock()
