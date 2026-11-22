@@ -147,3 +147,35 @@ def ablation_chart(summary: pd.DataFrame, out: Path) -> None:
     ax.grid(axis="x", color=GRID, linewidth=0.8)
     ax.grid(axis="y", visible=False)
     _save(fig, out / "ablation.png")
+
+
+def arena_chart(table: pd.DataFrame, out: Path) -> None:
+    """Left: Bradley-Terry rating. Right: profit vs the Kaggle starter bot vs a copy of itself."""
+    key_colors = {**COLORS, "kaggle_starter": MUTED}
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4.3))
+    t = table.iloc[::-1]
+    lo = float(t["rating"].min()) - 150
+    ax1.barh(range(len(t)), t["rating"] - lo, left=lo, color=[key_colors.get(a, MUTED) for a in t["agent"]],
+             height=0.55, edgecolor=SURFACE, linewidth=2)
+    for i, r in enumerate(t["rating"]):
+        ax1.text(r, i, f" {r:.0f}", va="center", fontsize=9, color=INK)
+    ax1.set_yticks(range(len(t)), t["label"], fontsize=9)
+    ax1.set_xlim(lo, t["rating"].max() + 200)
+    _style(ax1, "Arena rating (Bradley-Terry, Elo scale)")
+    ax1.grid(axis="x", color=GRID)
+    ax1.grid(axis="y", visible=False)
+    s = table.dropna(subset=["vs_itself"])
+    x = range(len(s))
+    ax2.bar([i - 0.2 for i in x], s["vs_starter"], width=0.38, color=[key_colors[a] for a in s["agent"]],
+            edgecolor=SURFACE, linewidth=2, label="vs Kaggle starter bot")
+    ax2.bar([i + 0.2 for i in x], s["vs_itself"], width=0.38, color=[key_colors[a] for a in s["agent"]],
+            alpha=0.45, edgecolor=SURFACE, linewidth=2, hatch="//", label="vs a copy of itself")
+    for i, (a_, b_, c_) in enumerate(zip(s["vs_starter"], s["vs_itself"], s["competition_cost_pct"])):
+        ax2.text(i + 0.2, b_, f"{c_:+.0f}%", ha="center", va="bottom", fontsize=9, color=INK)
+    ax2.set_xticks(list(x), [lbl.replace(" ", "\n", 1) for lbl in s["label"]], fontsize=8)
+    from matplotlib.patches import Patch
+    ax2.legend(handles=[Patch(facecolor=MUTED, label="vs Kaggle starter bot"),
+                        Patch(facecolor=MUTED, alpha=0.45, hatch="//", label="vs a copy of itself")],
+               frameon=False, fontsize=9)
+    _style(ax2, "Price of competition on a shared market")
+    _save(fig, out / "arena.png")

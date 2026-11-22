@@ -46,6 +46,17 @@ class FarmEnv:
         self.seed = 0
         self.price_history: list[dict[str, int]] = []
         self.event_log: list[dict[str, Any]] = []
+        self.me = 0  # which seat this view controls (0 or 1); see view()
+
+    @property
+    def them(self) -> int:
+        return 1 - self.me
+
+    def view(self, player: int) -> "FarmEnv":
+        """A view of the same game from `player`'s seat (shares the game; used by the Arena)."""
+        v = copy.copy(self)
+        v.me = player
+        return v
 
     # ------------------------------------------------------------------ api
     def reset(self, seed: int = 0) -> dict[str, Any]:
@@ -60,8 +71,12 @@ class FarmEnv:
         self.today_events = self._apply_events(0)
         return self.observe()
 
-    def step(self, plan: dict[str, Any]) -> tuple[dict[str, Any], float, bool, dict[str, Any]]:
-        """Run one day with `plan`. Returns (obs, reward, done, info)."""
+    def step(self, plan: dict[str, Any], rival: Any = None) -> tuple[dict[str, Any], float, bool, dict[str, Any]]:
+        """Run one day with `plan`. Returns (obs, reward, done, info).
+
+        `rival` controls the other seat: None = the configured built-in opponent, a str = a built-in
+        bot by name, or a dict = a daily plan executed by its own Foreman (two-agent Arena match).
+        """
         assert self.game is not None, "call reset() first"
         if self.done:
             return self.observe(), 0.0, True, {"rejected": ["episode already finished"]}
@@ -69,16 +84,27 @@ class FarmEnv:
         clean, rejected = validate_plan(plan, state, self.cfg["foreman"]["max_hands"])
         cash0 = self.cash
         day = self.day
-        foreman = Foreman(clean, day, self.last_day, self.cfg["foreman"]["final_day_sell_hour"])
-        opp = BUILTIN_OPPONENTS.get(self.opponent_name, BUILTIN_OPPONENTS["pass"])
+        sell_hour = self.cfg["foreman"]["final_day_sell_hour"]
+        foreman = Foreman(clean, day, self.last_day, sell_hour)
+        rival_info: dict[str, Any] = {}
+        if isinstance(rival, dict):
+            rview = self.view(self.them)
+            rclean, rrej = validate_plan(rival, rview.observe(), self.cfg["foreman"]["max_hands"])
+            rfore = Foreman(rclean, day, self.last_day, sell_hour)
+            rival_cash0 = rview.cash
+            rival_info = {"plan": rclean, "rejected": rrej}
+            opp = rfore.act
+        else:
+            opp = BUILTIN_OPPONENTS.get(rival or self.opponent_name, BUILTIN_OPPONENTS["pass"])
         sales: dict[str, list[float]] = {}  # item -> [units sold, revenue]
         while not self.game.done and self.game.obs0.day == day:
-            obs0 = self.game.observation(0)
+            obs0 = self.game.observation(self.me)
             action = foreman.act(obs0)
             shed_before = dict(obs0["private"]["shed"])
             inv_before = dict(obs0["market"]["inventory"])
-            self.game.step([action, opp(self.game.observation(1))])
-            shed_after = self.game.observation(0)["private"]["shed"]
+            other = opp(self.game.observation(self.them))
+            self.game.step([action, other] if self.me == 0 else [other, action])
+            shed_after = self.game.observation(self.me)["private"]["shed"]
             for item in {o[1] for o in action["market"] if o[0] == "SELL"}:
                 sold = shed_before.get(item, 0) - shed_after.get(item, 0)
                 if sold > 0:
@@ -89,6 +115,9 @@ class FarmEnv:
         reward = self.cash - cash0
         info = {"day": day, "plan": clean, "rejected": rejected, "events": self.today_events,
                 "sales": sales, "cash": self.cash}
+        if rival_info:
+            rival_info["reward"] = self.view(self.them).cash - rival_cash0
+            info["rival"] = rival_info
         if not self.done:
             self.today_events = self._apply_events(self.day)
         return self.observe(), reward, self.done, info
@@ -103,7 +132,7 @@ class FarmEnv:
 
     @property
     def cash(self) -> float:
-        return float(self.game.obs0.farms[0]["money"]) if self.game else 0.0
+        return float(self.game.obs0.farms[self.me]["money"]) if self.game else 0.0
 
     @property
     def profit(self) -> float:
@@ -140,7 +169,7 @@ class FarmEnv:
         """Cash + 80% market value of stock + expected value of growing crops and animals."""
         assert self.game is not None
         prices = self.game.obs0.market["prices"]
-        priv = self.game.state[0].observation.private
+        priv = self.game.state[self.me].observation.private
         worth = self.cash
         for item, n in priv["shed"].items():
             if item in prices:
@@ -148,7 +177,7 @@ class FarmEnv:
             elif item in kg.ANIMALS:
                 worth += 0.5 * n * kg.ANIMALS[item]["cost"]
         days_left = self.last_day - self.day
-        for row in self.game.obs0.farms[0]["tiles"]:
+        for row in self.game.obs0.farms[self.me]["tiles"]:
             for t in row:
                 if not isinstance(t, dict):
                     continue
@@ -166,8 +195,8 @@ class FarmEnv:
         """Compact, JSON-friendly observation used by agents, tools and the UI."""
         assert self.game is not None
         o = self.game.obs0
-        me = o.farms[0]
-        priv = self.game.state[0].observation.private
+        me = o.farms[self.me]
+        priv = self.game.state[self.me].observation.private
         plots: list[dict[str, Any]] = []
         grid: list[list[str]] = []
         free = weeds = 0
@@ -206,7 +235,7 @@ class FarmEnv:
         return {
             "day": self.day, "last_day": self.last_day, "days_left": self.last_day - self.day,
             "cash": round(self.cash, 1), "profit": round(self.profit, 1),
-            "opponent_cash": round(float(o.farms[1]["money"]), 1),
+            "opponent_cash": round(float(o.farms[self.them]["money"]), 1),
             "free_plots": free, "weeds": weeds, "crops_growing": crops, "animals": animals,
             "plots": plots, "grid": grid,
             "land_quadrants": list(me["unlocked_quadrants"]),

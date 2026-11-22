@@ -1,0 +1,6 @@
+agent,label,rating,win_rate,mean_profit,vs_starter,vs_itself,competition_cost_pct
+llm_single,LLM single-agent,2434.0,95.8,55393,72474.0,39881.0,-45.0
+llm_multi,LLM multi-agent,2124.0,75.0,61390,84355.0,47404.0,-43.8
+greedy,Greedy heuristic,1815.0,54.2,30549,30498.0,23416.0,-23.2
+random,Random,979.0,25.0,10259,12906.0,10683.0,-17.2
+kaggle_starter,Kaggle starter bot,147.0,0.0,580,,,
