@@ -68,7 +68,7 @@ class Provider:
             time.sleep(wait)
         t0 = time.time()
         last_err: Exception | None = None
-        for attempt in range(3):
+        for attempt in range(4):
             try:
                 reply = self._call(system, messages)
                 reply.latency_s = time.time() - t0
@@ -78,7 +78,7 @@ class Provider:
                 status = e.response.status_code if e.response is not None else 0
                 last_err = LLMError(f"{self.name} HTTP {status}: {e.response.text[:300] if e.response is not None else e}")
                 if status in (429, 500, 502, 503, 504):
-                    time.sleep(min(12, 3 * 2 ** attempt))
+                    time.sleep(min(20, 5 * 2 ** attempt))
                     continue
                 break
             except requests.RequestException as e:
@@ -99,8 +99,10 @@ def _key(var: str) -> str:
 
 
 class GeminiProvider(Provider):
-    """GEMINI_MODEL may list fallbacks, e.g. "gemini-3.6-flash,gemini-3.5-flash": a busy (503) or
-    retired (404) model is skipped for the next one, and the first that answers is remembered."""
+    """GEMINI_MODEL may list fallbacks, e.g. "gemini-3.6-flash,gemini-3.5-flash": a busy (503),
+    rate-limited (429) or retired (404) model is skipped for the next one, and the first that answers
+    is remembered. The free tier allows ~5 requests per minute per model, so a list of three
+    roughly triples the usable rate."""
 
     name = "gemini"
 
@@ -123,7 +125,7 @@ class GeminiProvider(Provider):
                 return reply
             except requests.HTTPError as e:
                 status = e.response.status_code if e.response is not None else 0
-                if status in (404, 503) and i + 1 < len(self.models):
+                if status in (404, 429, 503) and i + 1 < len(self.models):
                     last = e
                     continue
                 raise
