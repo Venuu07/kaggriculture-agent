@@ -1,4 +1,4 @@
-import type { WeatherSeason, ArenaMatch, DayRecord, FarmState, MemoryFile, ProviderInfo, Research, Results, RunData, RunHeader, RunInfo } from "./types";
+import type { RealRun, WeatherSeason, ArenaMatch, DayRecord, FarmState, MemoryFile, ProviderInfo, Research, Results, RunData, RunHeader, RunInfo } from "./types";
 
 async function get<T>(url: string): Promise<T> {
   const r = await fetch(url);
@@ -23,6 +23,7 @@ export const api = {
   providers: () => get<ProviderInfo[]>("/api/providers"),
   memory: () => get<MemoryFile[]>("/api/memory"),
   research: () => get<Research>("/api/research"),
+  realLlm: () => get<RealRun[]>("/api/real-llm"),
   weather: () => get<WeatherSeason[]>("/api/weather"),
   arenaMatches: () => get<string[]>("/api/arena/matches"),
   arenaMatch: (name: string) => get<ArenaMatch>(`/api/arena/matches/${encodeURIComponent(name)}`),

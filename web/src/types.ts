@@ -67,3 +67,9 @@ export interface ArenaMatch {
   days: ArenaDay[];
   summary: { profit0: number; profit1: number; cash0: number; cash1: number; winner: string; final: FarmState[] };
 }
+
+export interface RealRun {
+  name: string; label: string; agent: string; provider: string; model?: string; real: boolean; profit: number;
+  llm_calls: number; tokens: number; cost_usd: number; fallback_days: number; tool_calls: number;
+  days_with_tools: number; simulations: number; guardrails: number; minutes: number;
+}

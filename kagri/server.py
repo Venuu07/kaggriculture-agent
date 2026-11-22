@@ -111,6 +111,32 @@ def research() -> dict[str, Any]:
             "matrix": read("arena_matrix.csv"), "reflection": read("reflection_verified.csv")}
 
 
+@app.get("/api/real-llm")
+def real_llm() -> list[dict[str, Any]]:
+    """Summaries of recorded real-LLM seasons next to same-seed baselines and offline-reasoner runs."""
+    out: list[dict[str, Any]] = []
+    paths = sorted(RUNS_DIR.glob("recorded_*.jsonl")) + sorted(RUNS_DIR.glob("demo_*.jsonl"))
+    for path in paths:
+        try:
+            run = load_run(path)
+        except (OSError, json.JSONDecodeError):
+            continue
+        h, days, s = run["header"], run["days"], run["summary"]
+        if not s or not days or h.get("seed") != 0 or h.get("weather_source", "simulated") != "simulated":
+            continue
+        tools = [sum(1 for t in d["trace"] if t.get("type") == "tool") for d in days]
+        sims = sum(1 for d in days for t in d["trace"] if t.get("type") == "tool" and t.get("name") == "simulate_action")
+        guards = sum(1 for d in days for t in d["trace"] if t.get("type") == "guardrail")
+        out.append({"name": path.stem, "label": h.get("label"), "agent": h.get("agent"),
+                    "provider": h.get("provider", "-"), "model": h.get("model"), "real": path.stem.startswith("recorded_"),
+                    "profit": s.get("profit"), "llm_calls": s.get("llm_calls", 0), "tokens": s.get("tokens", 0),
+                    "cost_usd": round(s.get("cost_usd", 0.0), 4), "fallback_days": s.get("fallbacks", 0),
+                    "tool_calls": sum(tools), "days_with_tools": sum(1 for t in tools if t), "simulations": sims,
+                    "guardrails": guards, "minutes": round(s.get("latency_s", 0.0) / 60, 1)})
+    out.sort(key=lambda r: -(r["profit"] or 0))
+    return out
+
+
 @app.get("/api/arena/matches")
 def arena_matches() -> list[str]:
     return sorted(p.stem for p in RUNS_DIR.glob("arena_*.jsonl"))

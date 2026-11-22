@@ -4,7 +4,7 @@ import {
 } from "recharts";
 import { api } from "../api";
 import { agentColor, money } from "../constants";
-import type { MemoryFile, Research } from "../types";
+import type { MemoryFile, RealRun, Research } from "../types";
 
 const num = (v: unknown) => (typeof v === "number" ? v : v === "" || v === null || v === undefined ? NaN : Number(v));
 const tip = { background: "var(--surface)", border: "1px solid var(--line)", borderRadius: 8, fontSize: 12 };
@@ -13,10 +13,12 @@ const tip = { background: "var(--surface)", border: "1px solid var(--line)", bor
 export function ResearchView() {
   const [data, setData] = useState<Research | null>(null);
   const [lessons, setLessons] = useState<MemoryFile | null>(null);
+  const [real, setReal] = useState<RealRun[]>([]);
   const [err, setErr] = useState("");
   useEffect(() => {
     api.research().then(setData).catch((e) => setErr(String(e)));
     api.memory().then((m) => setLessons(m.find((x) => x.name === "verified") ?? null)).catch(() => undefined);
+    api.realLlm().then(setReal).catch(() => setReal([]));
   }, []);
 
   const abl = useMemo(() => (data?.ablation ?? []).filter((r) => r.variant !== "Full system").map((r) => ({
@@ -114,6 +116,34 @@ export function ResearchView() {
           <p className="muted small">Solid: vs the starter bot. Faded: vs a copy of itself (label = profit change).</p>
         </section>
       </div>
+
+      {real.some((r) => r.real) && (
+        <section className="card rq">
+          <div className="rq-head"><span className="rq-n">RQ5</span><div><h3>How does a real LLM behave?</h3>
+            <p className="muted small">Real Gemini seasons on seed 0, next to the offline reasoner and the baselines on the same seed.
+              Record more with <code>python -m kagri.record --provider gemini</code>.</p></div></div>
+          <table className="table">
+            <thead><tr><th>Agent</th><th>Profit</th><th /><th>LLM calls</th><th>Days using tools</th><th>Simulations</th><th>Guardrail fixes</th><th>Cost</th></tr></thead>
+            <tbody>{real.map((r) => {
+              const max = Math.max(...real.map((x) => x.profit || 0));
+              return (
+                <tr key={r.name} className={r.real ? "real-row" : ""}>
+                  <td><i className="dot" style={{ background: agentColor(r.agent) }} />{r.label}{r.real && <span className="badge real-badge">real LLM</span>}</td>
+                  <td className="serif-num">{money(r.profit)}</td>
+                  <td className="bar-cell"><span style={{ width: `${Math.max(2, (100 * (r.profit || 0)) / max)}%`, background: agentColor(r.agent) }} /></td>
+                  <td>{r.real ? r.llm_calls : "–"}</td>
+                  <td>{r.agent.startsWith("llm") ? `${r.days_with_tools} / 30` : "–"}</td>
+                  <td>{r.agent.startsWith("llm") ? r.simulations : "–"}</td>
+                  <td>{r.agent.startsWith("llm") ? r.guardrails : "–"}</td>
+                  <td>{r.real ? `$${r.cost_usd.toFixed(3)}` : "$0"}</td>
+                </tr>
+              );
+            })}</tbody>
+          </table>
+          <p className="muted small">The real model rarely reached for its tools and never simulated a plan on its own: it behaves like the
+            "no look-ahead" ablation. The test-before-act policy makes it simulate before every decision.</p>
+        </section>
+      )}
 
       <section className="card rq">
         <div className="rq-head"><span className="rq-n">RQ4</span><div><h3>Who wins when they meet?</h3>
