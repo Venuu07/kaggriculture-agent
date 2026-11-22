@@ -25,18 +25,21 @@ export function HowItWorks() {
       <div className="card">
         <h3>Architecture</h3>
         <div className="arch">
-          <div className="layer ui"><b>React dashboard</b><span>live farm · agent's mind · results</span></div>
+          <div className="layer ui"><b>React dashboard</b><span>live farm · agent's mind · play vs AI · scenario lab · shop world · arena · research</span></div>
           <div className="arrow">⇅ REST API (FastAPI)</div>
           <div className="layer-row">
             <div className="layer agent">
-              <b>Agentic AI (kagri/agents)</b>
+              <b>Agentic AI: one domain-neutral core (kagri/agents/core.py)</b>
               <div className="sub-row">
                 <span className="pill">Planner</span><span className="pill">Market Analyst</span>
                 <span className="pill">Agronomist</span><span className="pill">Manager</span>
               </div>
               <div className="sub-row">
                 <span className="pill soft">ReAct loop</span><span className="pill soft">8 tools</span>
-                <span className="pill soft">short-term memory</span><span className="pill soft">long-term lessons</span>
+                <span className="pill soft">short-term memory</span><span className="pill soft">verified lessons</span>
+              </div>
+              <div className="sub-row">
+                <span className="pill">World 1: farm (official rules)</span><span className="pill">World 2: kirana store</span>
               </div>
             </div>
             <div className="side">

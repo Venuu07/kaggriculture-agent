@@ -139,6 +139,17 @@ Open the **Research** tab and walk through the four numbers at the top:
 - "Our surprise result: the single agent wins head-to-head against the higher-earning team, because
   the team's simulator assumes a weak rival. Planning with the wrong opponent model is worse than planning less."
 
+## Interactive extras (pick one or two, 1-2 minutes each)
+
+- **Play vs AI**: invite a panel member: "Would you like to farm against our AI?" Press Start,
+  let them choose a plan (or "Suggest a plan"), end a day, then "Show how the AI decided".
+- **Scenario Lab**: Melon market crash. "Greedy grows only melons and ends the month at minus $755.
+  Our agent spread its risk and still makes $34.9k." Then: "It also showed us a weakness: with a
+  full shed it sold melons at $1. We report that honestly."
+- **New world: Shop**: start at the mapping table. "The farm was a testbed. The same agent core runs
+  a grocery store: it stocks ice cream before a heatwave and sweets before a festival. 73% more
+  profit than a fixed restock rule." This is the best answer to "where is this useful?"
+
 ## 9:00 - 9:30 · Live mode (optional, if time allows)
 
 In the sidebar click **Live**. Choose **LLM multi-agent**. For the provider, pick **Gemini** if your key works, otherwise the **Offline reasoner (no key)**. Seed 1, events on. Click **Start season**.

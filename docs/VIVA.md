@@ -150,3 +150,38 @@ makes 30 decisions per season, not 720. The bottleneck is the free tier's rate l
 per minute per model), which we handle by rotating between three Gemini models. For faster demos,
 Groq's free tier or a local model through Ollama use the same provider interface.
 
+## Applications and the interactive extensions
+
+### 36. Where is this kind of project useful in the real world?
+The farm is a testbed. What we built is a decision-making agent: it observes, thinks, uses tools,
+simulates a plan before acting, acts inside guardrails, and learns lessons it has verified. That
+fits any problem where decisions repeat under uncertainty and you can build a simulator: inventory
+and retail pricing, supply chains, perishables such as food and medicine, energy and battery
+scheduling, hospital staffing, and farm advisory with real weather. We demonstrate the claim:
+the same agent core runs a kirana store and earns 73% more than a fixed restock rule.
+
+### 37. Can this predict stock prices?
+No, and we should not claim it. The agent does not predict; it decides. Price prediction is a
+forecasting problem with accuracy metrics. The honest finance use is portfolio decision support:
+the agent proposes a rebalancing, tests it in a market simulator, and must stay inside risk
+guardrails, exactly as our farmer tests plans before acting. Notably, our farm market already
+models one finance idea: your own trades move the price (market impact).
+
+### 38. How did you show the agent is general and not tuned to farming?
+We moved the ReAct loop into a domain-neutral module, `kagri/agents/core.py`, with no farm code.
+The farm agent and the shop agent both call the same function; only the tools, the prompt and the
+simulator are new. A test checks that the shop really uses the same loop. The farm results did
+not change after the refactor, which shows it was purely structural.
+
+### 39. What is the Scenario Lab?
+A set of scripted crises (drought week, melon crash, pest wave, monsoon with fungus, festival
+boom), each run with random events switched off so it is a controlled experiment, and compared
+with a calm season on the same farm. In the melon crash Greedy ends at −$755 while the AI team
+makes $34.9k, because it spread across crops. It also revealed a weakness: with a full shed the AI
+sold melons at $1.
+
+### 40. What is Play vs AI for?
+It lets a person farm against the agent on one shared market, which makes the competition effect
+(RQ3) tangible: when you flood the market, the AI's prices fall too. After each day you can read
+the AI's full reasoning. A "suggest a plan" button gives beginners the offline strategist's advice.
+

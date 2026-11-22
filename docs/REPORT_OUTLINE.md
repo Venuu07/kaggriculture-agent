@@ -347,7 +347,18 @@ near $3.2k to $3.5k in every run.
 - The real multi-agent team is the weakest LLM agent: more calls, no simulations.
 - Guardrails repaired 16-40 plans per season; 0 fallback days; 3-8 cents per season.
 
-### 7.12 Threats to validity
+### 7.12 Robustness: Scenario Lab (`kagri/scenarios.py`, `results/scenarios.json`)
+- Six scripted crises vs a calm control on seed 0. Melon crash: AI $34,930 vs Greedy −$755.
+- Drought 91% of calm, pest wave 75%, monsoon 91%, festival 92% (AI). Weakness: full shed sells at $1.
+
+### 7.13 Generalisation: the shop world (`kagri/shop/`, `kagri/agents/core.py`)
+- The same ReAct core in a kirana store: AI ₹61,815 vs fixed rule ₹35,653 (+73%), 5 seeds;
+  customers turned away 237 vs 1,671; units wasted 5 vs 3.
+
+### 7.14 Interactive system: Play vs AI (`kagri/play.py`)
+- Human seat on the shared market, plan builder with a budget check, suggested plans, the AI's reasoning.
+
+### 7.15 Threats to validity
 - Small number of seeds; high variance for the agents.
 - Offline reasoner is hand-designed, so its strength reflects our domain rules.
 - Weak opponent; weather layer is our own.

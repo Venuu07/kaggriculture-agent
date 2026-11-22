@@ -4,6 +4,10 @@ A final-year B.Tech (CSE) major project built on the Kaggle simulation competiti
 **[Kaggriculture](https://www.kaggle.com/competitions/kaggriculture)**: run a farm for a 30-day
 season and end with as much money as possible.
 
+It is built as a **general agentic decision-making core**, demonstrated on two worlds: the farm
+(the official competition rules) and a **kirana store** run by the *same* agent loop. Anyone can
+**play against the AI**, throw crises at it in the **Scenario Lab**, or watch two AIs compete on one market.
+
 An LLM agent manages the farm using **ReAct** (it thinks, calls tools, reads the results, then
 acts), **look-ahead simulation**, **short-term and long-term memory with reflection**, and an
 optional **multi-agent team** (Planner, Market Analyst, Agronomist and a Manager). It plays on the
@@ -28,6 +32,28 @@ Four experiments, each reproducible with one command (full write-up: [docs/RESEA
 | RQ4: Who wins head-to-head? | The single agent beats the higher-earning team 6/6 times: **planning with a wrong opponent model is worse than planning less** | `python -m kagri.arena` |
 
 ![Research tab](docs/img/ui_research.png)
+
+## Interactive demos
+
+| Tab | What you do |
+|---|---|
+| **Play vs AI** | Farm against the agent on one shared market; see its reasoning after each day; ask for a suggested plan |
+| **Scenario Lab** | Pick a crisis (drought, melon crash, pest wave, monsoon, festival boom) and watch the AI and Greedy live through it |
+| **New world: Shop** | The same agent core runs a kirana store: AI ₹61,815 vs a fixed restock rule ₹35,653 (+73%), 237 vs 1,671 customers turned away |
+| Arena / Research | Two AIs on one market; the five research questions |
+
+| Play vs AI | Scenario Lab | Same brain, new world |
+|---|---|---|
+| ![Play](docs/img/ui_play.png) | ![Scenario Lab](docs/img/ui_scenarios.png) | ![Shop](docs/img/ui_shop.png) |
+
+## Where is this useful?
+
+The farm is a testbed. The agent's core (observe, think, use tools, **simulate before acting**,
+act within guardrails, learn from verified lessons) works wherever decisions repeat under
+uncertainty and a simulator of the world can be built: inventory and retail pricing (shown here
+with the shop), supply chains, perishables (food, medicine), portfolio *decision support*
+(rebalancing tested in a market simulator, not price prediction), energy and battery scheduling,
+hospital staffing, and real farm advisory with real weather (`kagri/realweather.py`).
 
 ## Results (5 seeds, weather and events on)
 
@@ -91,6 +117,8 @@ Then open `.env` and paste your key (for example `GEMINI_API_KEY=...`, with `LLM
 | **Run the demo** (opens http://localhost:8000) | `python -m kagri.serve` |
 | Evaluate every agent (about 1 min offline) | `python -m kagri.evaluate` |
 | Ablation study (RQ1) | `python -m kagri.ablation` |
+| Scenario Lab precompute (6 crises) | `python -m kagri.scenarios` |
+| Shop world: AI vs fixed rule | `python -m kagri.shop` |
 | Verified reflection (RQ2) | `python -m kagri.reflection` |
 | Arena tournament (RQ3, RQ4) | `python -m kagri.arena` |
 | Fetch real weather for a district (needs internet once) | `python -m kagri.realweather --district anantapur --start 2025-07-01` |
@@ -150,6 +178,8 @@ kagri/
   record.py      record a real-LLM season      server.py / serve.py      API + UI server
   ablation.py    RQ1 ablation study            reflection.py             RQ2 verified reflection
   arena.py       RQ3/RQ4 two-player tournament realweather.py            real historical weather
+  play.py        Play vs AI API                scenarios.py              Scenario Lab
+  agents/core.py the domain-neutral ReAct loop shop/                     the kirana-store world
   config.yaml    every tunable number
 web/             React + Vite + TypeScript UI (web/dist is the committed build)
 runs/            recorded seasons and arena matches (JSONL) for replay

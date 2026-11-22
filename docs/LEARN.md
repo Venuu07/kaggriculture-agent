@@ -272,3 +272,14 @@ Think of these as science experiments you run on the farm:
 4. **Real weather** (`kagri/realweather.py`). `classify_day` turns real rain and heat into the
    game's weather; `FarmEnv(weather=...)` uses it instead of random weather.
 
+## Bonus 2: one brain, many worlds
+
+Open `kagri/agents/core.py`. The function `react_loop` is the whole "thinking" part of the agent:
+ask the model, run the tool it picked, show it the result, repeat, accept the plan. It knows nothing
+about farms. The farm agent (`LLMAgent._react`) and the shop agent (`kagri/shop/agent.py`,
+`ShopAgent.decide`) both call it, passing their own tools and prompt. Like a person who learned to
+plan carefully on a farm and then runs a shop with the same habits.
+
+Then read `kagri/shop/env.py` (the store simulator), `kagri/scenarios.py` (the crisis scripts) and
+`kagri/play.py` (how a human takes one seat of the shared market).
+

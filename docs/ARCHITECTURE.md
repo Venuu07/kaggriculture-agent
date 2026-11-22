@@ -47,6 +47,9 @@ flowchart TB
 | Agents | `kagri/agents/` | `baselines.py` (Random, Greedy); `llm_agent.py` (ReAct, multi-agent, reflection); `tools.py`; `memory.py`; `prompts.py` |
 | LLM | `kagri/llm/providers.py`, `offline.py` | One `respond(system, messages)` interface over plain HTTPS for 4 providers; the offline reasoner speaks the same JSON protocol with rules instead of a model |
 | Runner / eval | `kagri/runner.py`, `evaluate.py`, `charts.py`, `record.py` | Play seasons, log every day as JSONL, aggregate CSVs, draw PNG charts, record real-LLM runs |
+| Agent core | `kagri/agents/core.py` | The domain-neutral ReAct loop (`react_loop`), used by the farm and the shop |
+| Second world | `kagri/shop/` | Kirana store env, shop tools, offline shopkeeper, fixed-rule baseline |
+| Interactive | `kagri/play.py`, `kagri/scenarios.py` | Play vs AI (human seat on the shared market), Scenario Lab (scripted crises) |
 | Research | `kagri/ablation.py`, `reflection.py`, `arena.py`, `realweather.py` | Ablation study, verified reflection, two-player Arena with Bradley-Terry ratings, real historical weather |
 | Server / UI | `kagri/server.py`, `serve.py`, `web/` | FastAPI JSON API + the built React app; replay recorded runs or play live |
 

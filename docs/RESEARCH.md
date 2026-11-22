@@ -158,7 +158,43 @@ the other agents' seed-0 runs (`runs/recorded_*.jsonl`, replayable in the dashbo
 **Caveat.** One seed per configuration: these are case studies, not significance tests. They
 are consistent with RQ1, where removing look-ahead cost 29%.
 
-## 7. Threats to validity
+## 7. Robustness: the Scenario Lab
+
+Six scripted crises (random events off, so each is a controlled experiment), seed 0, AI team vs
+Greedy; each agent's calm-season profit on the same farm is the control
+(`python -m kagri.scenarios`, `results/scenarios.json`).
+
+| Scenario | AI team | Greedy |
+|---|---|---|
+| Calm (control) | $85,525 | $34,439 |
+| **Melon market crash** (days 11, 18) | **$34,930** (41% of calm) | **−$755** |
+| Drought week (days 6–13) | $77,855 (91%) | $34,439 (100%) |
+| Pest wave (days 8, 14, 20) | $64,485 (75%) | $31,131 (90%) |
+| Monsoon with fungus | $77,732 (91%) | $34,813 (101%) |
+| Festival demand boom | $78,245 (92%) | $34,439 (100%) |
+
+The AI stays far ahead in every crisis. Diversification acts as insurance: the melon crash wipes
+out Greedy's all-melon season. In *relative* terms Greedy is often hit less, because it does less
+(fewer plants and animals at risk). **Known weakness:** when the shed is nearly full, a
+"sell everything" rule fires even after a price crash (in the melon scenario it sold 95 melons at
+$1). Freeing only the space needed, cheapest items first, is the obvious fix.
+
+## 8. Generalisation: the same agent core in a second world
+
+`kagri/agents/core.py` holds the ReAct loop, with no farm code in it. The farm agent and a
+**kirana-store agent** (`kagri/shop/`) both call it; only the tools, prompt and simulator differ.
+The store has perishables (milk spoils in 2 days), price-sensitive demand, heatwaves, festivals,
+rival promotions and supplier delays.
+
+| 5 seeds, 30 days, start ₹10,000 | Mean profit | Customers turned away | Units wasted |
+|---|---|---|---|
+| **AI shopkeeper** (same core, simulate_plan) | **₹61,815** | 237 | 5 |
+| Fixed restock rule | ₹35,653 | 1,671 | 3 |
+
+The same pattern (forecast, simulate candidate plans, commit the best within guardrails) earns
+**+73%** in a domain it was never designed for. That is the evidence behind "where is this useful".
+
+## 9. Threats to validity
 
 - **Offline reasoner.** Its strength reflects our domain rules; a real LLM may choose
   differently. The architecture claims (look-ahead, verification, coordination) still hold,
@@ -169,7 +205,7 @@ are consistent with RQ1, where removing look-ahead cost 29%.
 - **Our weather layer** is an extension. `--no-events` gives competition-pure runs, and
   real-weather mode replaces the random weather with historical data.
 
-## 8. Future work
+## 10. Future work
 
 1. **Opponent-aware look-ahead:** simulate the rival as a copy of ourselves, or infer its
    strategy from its visible farm (the observation shows the rival's tiles).
@@ -179,7 +215,7 @@ are consistent with RQ1, where removing look-ahead cost 29%.
 4. **Real markets:** drive prices with mandi price series (Agmarknet) alongside the real-weather mode.
 5. **Learning baselines:** a PPO policy on `FarmEnv` for an LLM-vs-RL comparison.
 
-## 9. Reproduce everything
+## 11. Reproduce everything
 
 ```bash
 python -m kagri.evaluate      # main comparison (~1 min)
@@ -194,5 +230,11 @@ python -m kagri.reflection    # RQ2 (~2 min)
 python -m kagri.arena         # RQ3 + RQ4 (~1 min)
 ```
 ```bash
-python -m pytest              # 20 tests
+python -m kagri.scenarios     # robustness (~10 s)
+```
+```bash
+python -m kagri.shop          # second world (~1 s)
+```
+```bash
+python -m pytest              # 24 tests
 ```

@@ -268,7 +268,35 @@ Speaker notes: "This was the most interesting result. Average profit and winning
 
 Speaker notes: "This is what happens with a real LLM. It is smart but lazy with tools, exactly like our no-look-ahead experiment. One simple policy, test before you act, fixed a big part of that."
 
-## Slide 24: Demo
+## Slide 24: Robustness: the Scenario Lab
+- Six scripted crises, each a controlled experiment against a calm-season control
+- Melon market crash: Greedy ends at −$755, the AI team at +$34.9k (diversification = insurance)
+- Drought, pests, monsoon, festival: the AI stays far ahead in every crisis
+- Honest: in relative terms Greedy is often hit less, because it does less
+- Known weakness found here: a full shed made the AI sell melons at $1
+- Visual: `docs/img/ui_scenarios.png`
+
+Speaker notes: "We did not only test the good days. We scripted the bad ones, and the lab even revealed a weakness, which we report."
+
+## Slide 25: Same brain, new world (where is this useful?)
+- The ReAct loop lives in one domain-neutral file: `kagri/agents/core.py`
+- The same core runs a kirana store: orders, prices, spoiling milk, heatwaves, festivals
+- AI shopkeeper ₹61,815 vs fixed restock rule ₹35,653 (+73%); 237 vs 1,671 customers turned away
+- Farm → store → real world: inventory, retail pricing, perishables, digital twins
+- Applies wherever decisions repeat under uncertainty and a simulator exists:
+  supply chains, energy, hospital staffing, portfolio decision support (not price prediction)
+- Visual: `docs/img/ui_shop.png` (the mapping table)
+
+Speaker notes: "The farm was our testbed. The agent itself is general: we moved it to a shop by changing only its tools and simulator."
+
+## Slide 26: Interactive: play against the AI
+- Anyone can farm against the agent on one shared market
+- A plan builder with a live budget, "suggest a plan" for beginners, the AI's full reasoning each day
+- Invite a panel member to play three days live
+
+Speaker notes: "This is where the panel can feel how the agent thinks: it reacts to your sales on the same market."
+
+## Slide 27: Demo
 - Images: `docs/img/ui_farm.png`, `docs/img/ui_mind.png`, `docs/img/ui_results.png`, `docs/img/ui_how.png`
 - Command: `python -m kagri.serve`, then open http://localhost:8000
 - Replay mode: recorded seasons, no internet needed
@@ -279,7 +307,7 @@ Speaker notes: Switch to the live demo here (see docs/DEMO_SCRIPT.md).
 
 ---
 
-## Slide 25: Limitations
+## Slide 28: Limitations
 - LLM numbers reported here come from the offline reasoner, not a language model
 - Daily granularity: the agent cannot micro-manage individual turns
 - Opponent is a simple built-in bot; the real competition is head-to-head against strong agents
@@ -291,7 +319,7 @@ Speaker notes: Showing limitations openly builds trust with the panel.
 
 ---
 
-## Slide 26: Conclusion and future scope
+## Slide 29: Conclusion and future scope
 - An agentic design (tools + look-ahead + guardrails + coordination) beats a classic heuristic by about 3x
 - Every decision is explainable and auditable in the reasoning trace
 - Future: evaluate real LLMs over many seeds; compare with an RL policy (PPO) on the same environment
@@ -302,7 +330,7 @@ Speaker notes: End on the general lesson: give an LLM good tools and a simulator
 
 ---
 
-## Slide 27: References
+## Slide 30: References
 1. S. Yao et al., "ReAct: Synergizing Reasoning and Acting in Language Models," ICLR 2023 (arXiv:2210.03629, 2022).
 2. N. Shinn et al., "Reflexion: Language Agents with Verbal Reinforcement Learning," NeurIPS 2023.
 3. T. Schick et al., "Toolformer: Language Models Can Teach Themselves to Use Tools," NeurIPS 2023.
