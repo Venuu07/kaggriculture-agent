@@ -110,9 +110,9 @@ class FarmEnv:
         """Independent copy for look-ahead (`simulate_action`)."""
         return copy.deepcopy(self)
 
-    def simulate(self, plan: dict[str, Any], days: int = 3,
-                 follow_up: dict[str, Any] | None = None) -> dict[str, Any]:
-        """Play `plan` today then `follow_up` (default: keep selling, plant nothing) on a copy.
+    def simulate(self, plan: dict[str, Any], days: int = 3, follow_up: Any = None) -> dict[str, Any]:
+        """Play `plan` today then `follow_up` (a plan, or a function obs -> plan; default: sell
+        everything, plant nothing) on a copy of the environment.
 
         Returns cash and net-worth change so plans with delayed payoff can be compared fairly.
         """
@@ -121,10 +121,12 @@ class FarmEnv:
         start_cash = sim.cash
         follow = follow_up or {"sell": {p: "all" for p in kg.PRODUCTS}}
         rejected: list[str] = []
+        obs = sim.observe()
         for i in range(days):
             if sim.done:
                 break
-            _, _, _, info = sim.step(plan if i == 0 else follow)
+            nxt = plan if i == 0 else (follow(obs) if callable(follow) else follow)
+            obs, _, _, info = sim.step(nxt)
             if i == 0:
                 rejected = info["rejected"]
         return {"days": days, "cash_change": round(sim.cash - start_cash, 1),
@@ -210,6 +212,7 @@ class FarmEnv:
             "shed_capacity_left": 100 - sum(priv["shed"].values()),
             "seeds": {k: v for k, v in priv["seeds"].items() if v},
             "prices": prices,
+            "market_inventory": dict(o.market["inventory"]),
             "town_shops": list(o.town["unlocked_shops"]),
             "weather": self.today_events if hasattr(self, "today_events") else {},
             "forecast": self.forecast(),
