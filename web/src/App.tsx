@@ -1,15 +1,17 @@
 import { Component, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { api } from "./api";
+import { ArenaView } from "./components/ArenaView";
 import { FarmGrid } from "./components/FarmGrid";
 import { HowItWorks } from "./components/HowItWorks";
 import { MindFeed } from "./components/MindFeed";
 import { PlanChips } from "./components/PlanChips";
+import { ResearchView } from "./components/ResearchView";
 import { ResultsView } from "./components/ResultsView";
 import { WEATHER_ICON, agentColor as colorOf, money, titleCase } from "./constants";
 import type { DayRecord, FarmState, ProviderInfo, RunHeader, RunInfo } from "./types";
 
-type Tab = "farm" | "mind" | "results" | "how";
+type Tab = "farm" | "mind" | "arena" | "research" | "results" | "how";
 type Mode = "replay" | "live";
 
 const AGENTS = [
@@ -175,7 +177,7 @@ export default function App() {
             </div>
           </div>
           <nav className="tabs">
-            {([["farm", "Live farm"], ["mind", "Agent's mind"], ["results", "Results"], ["how", "How it works"]] as [Tab, string][]).map(([k, l]) => (
+            {([["farm", "Live farm"], ["mind", "Agent's mind"], ["arena", "Arena"], ["research", "Research"], ["results", "Results"], ["how", "How it works"]] as [Tab, string][]).map(([k, l]) => (
               <button key={k} className={tab === k ? "on" : ""} onClick={() => setTab(k)}>{l}</button>
             ))}
           </nav>
@@ -253,6 +255,8 @@ export default function App() {
               </div>
             </div>
           )}
+          {tab === "arena" && <ArenaView speed={speed} />}
+          {tab === "research" && <ResearchView />}
           {tab === "results" && <ResultsView />}
           {tab === "how" && <HowItWorks />}
           {(tab === "farm" || tab === "mind") && !state && (

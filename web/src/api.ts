@@ -1,4 +1,4 @@
-import type { DayRecord, FarmState, MemoryFile, ProviderInfo, Results, RunData, RunHeader, RunInfo } from "./types";
+import type { ArenaMatch, DayRecord, FarmState, MemoryFile, ProviderInfo, Research, Results, RunData, RunHeader, RunInfo } from "./types";
 
 async function get<T>(url: string): Promise<T> {
   const r = await fetch(url);
@@ -22,6 +22,9 @@ export const api = {
   results: () => get<Results>("/api/results"),
   providers: () => get<ProviderInfo[]>("/api/providers"),
   memory: () => get<MemoryFile[]>("/api/memory"),
+  research: () => get<Research>("/api/research"),
+  arenaMatches: () => get<string[]>("/api/arena/matches"),
+  arenaMatch: (name: string) => get<ArenaMatch>(`/api/arena/matches/${encodeURIComponent(name)}`),
   liveStart: (body: { agent: string; provider: string; seed: number; events: boolean }) =>
     post<{ sid: string; header: RunHeader; state: FarmState; note: string }>("/api/live", body),
   liveStep: (sid: string) =>

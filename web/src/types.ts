@@ -51,3 +51,13 @@ export interface MemoryFile {
   name: string;
   entries: { episode: number; seed: number; profit: number; lessons: string[] }[];
 }
+
+export interface Research { ablation: Row[]; arena: Row[]; matrix: Row[]; reflection: Row[] }
+
+export interface ArenaPlayerDay { before: FarmState; plan: Plan | null; trace: TraceStep[]; reward: number | null }
+export interface ArenaDay { day: number; events: Weather; players: ArenaPlayerDay[] }
+export interface ArenaMatch {
+  header: { seed: number; events: boolean; provider: string; players: { key: string; label: string }[] };
+  days: ArenaDay[];
+  summary: { profit0: number; profit1: number; cash0: number; cash1: number; winner: string; final: FarmState[] };
+}
