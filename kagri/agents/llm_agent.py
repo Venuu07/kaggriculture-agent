@@ -108,6 +108,8 @@ class LLMAgent(Agent):
             trace.append({"type": "fallback", "agent": "system",
                           "text": "LLM reply unusable - using the deterministic safe plan.", "plan": plan})
         plan = labour_guardrail(plan, obs, trace)
+        if self.provider.name != "offline":  # the offline reasoner already plans within its own cash buffer
+            plan = budget_guardrail(plan, obs, trace)
         return Decision(plan=plan, trace=trace, tokens=self._stats["tokens"], cost_usd=self._stats["cost"],
                         latency_s=self._stats["latency"], llm_calls=self._stats["calls"], fallback=fallback)
 
@@ -212,6 +214,53 @@ def labour_guardrail(plan: dict[str, Any], obs: dict[str, Any], trace: list[dict
         plan = {**plan, "hands": need}
         trace.append({"type": "guardrail", "agent": "system",
                       "text": f"Labour check: {have} hands cannot water {new_tiles} new + existing tiles; raised to {need}."})
+    return plan
+
+
+def budget_guardrail(plan: dict[str, Any], obs: dict[str, Any], trace: list[dict[str, Any]],
+                     days: int = 7, floor: float = 300.0) -> dict[str, Any]:
+    """Keep working capital: after today's spending at least max($300, a week of the wages the farm
+    needs) must remain, or the hands cannot be paid and the crops die unwatered before harvest
+    (seen with Gemini: land + 24 melons on day 0 left $68). Trims land first, then animals, then
+    the most expensive seeds."""
+    from ..engine import kaggriculture as kg
+    from ..plan import hire_cost_total
+
+    if not isinstance(plan, dict):
+        return plan
+    plan = {**plan, "plant": dict(plan.get("plant") or {}), "buy_animals": dict(plan.get("buy_animals") or {})}
+
+    def spend(p: dict[str, Any]) -> float:
+        total = hire_cost_total(_ints([p.get("hands", 0)])[0])
+        if p.get("buy_land") and obs.get("next_land_cost"):
+            total += obs["next_land_cost"]
+        for a, n in p["buy_animals"].items():
+            if a in kg.ANIMALS:
+                total += kg.ANIMALS[a]["cost"] * max(0, _ints([n])[0])
+        for c, n in p["plant"].items():
+            if c in kg.CROPS:
+                total += kg.CROPS[c]["seed"] * max(0, _ints([n])[0] - obs["seeds"].get(c, 0))
+        return total
+
+    def reserve(p: dict[str, Any]) -> float:
+        tiles = sum(_ints(p["plant"].values())) + sum(_ints(p["buy_animals"].values()))
+        return max(floor, days * hire_cost_total(hands_needed(obs, tiles)))
+
+    cash = float(obs["cash"])
+    if cash - spend(plan) >= reserve(plan):
+        return plan
+    before = spend(plan)
+    if plan.get("buy_land"):
+        plan["buy_land"] = False
+    for a in sorted(plan["buy_animals"], key=lambda x: -kg.ANIMALS.get(x, {"cost": 0})["cost"]):
+        while cash - spend(plan) < reserve(plan) and _ints([plan["buy_animals"][a]])[0] > 0:
+            plan["buy_animals"][a] = _ints([plan["buy_animals"][a]])[0] - 1
+    for c in sorted(plan["plant"], key=lambda x: -kg.CROPS.get(x, {"seed": 0})["seed"]):
+        while cash - spend(plan) < reserve(plan) and _ints([plan["plant"][c]])[0] > 0:
+            plan["plant"][c] = _ints([plan["plant"][c]])[0] - 1
+    trace.append({"type": "guardrail", "agent": "system",
+                  "text": f"Budget check: the plan spent ${before:,.0f} of ${cash:,.0f} and left too little to pay "
+                          f"the farm hands until harvest (keep >= ${reserve(plan):,.0f}); trimmed to ${spend(plan):,.0f}."})
     return plan
 
 
