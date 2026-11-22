@@ -258,7 +258,17 @@ Speaker notes: "The better the agent, the more a clone hurts it. This is a real 
 
 Speaker notes: "This was the most interesting result. Average profit and winning are different goals, exactly like in the Kaggle ladder."
 
-## Slide 23: Demo
+## Slide 23: Research question 5: how does a real LLM behave?
+- Three full Gemini seasons on the same farm (seed 0), free tier, 0 fallback days
+- Gemini single: $41,018 (+38% over Greedy), but it used tools on 2 of 30 days and never simulated
+- Test-before-act policy (simulate before committing): $48,617, +18.5%, simulated 29/30 days
+- Gemini multi-agent: $31,197 with 3.6x the calls: agents that skip tools add cost, not thinking
+- Guardrails fixed 16-40 bad plans per season (0 workers, $68 left); cost 3-8 cents per season
+- Visual: RQ5 table in the Research tab (`docs/img/ui_research.png`)
+
+Speaker notes: "This is what happens with a real LLM. It is smart but lazy with tools, exactly like our no-look-ahead experiment. One simple policy, test before you act, fixed a big part of that."
+
+## Slide 24: Demo
 - Images: `docs/img/ui_farm.png`, `docs/img/ui_mind.png`, `docs/img/ui_results.png`, `docs/img/ui_how.png`
 - Command: `python -m kagri.serve`, then open http://localhost:8000
 - Replay mode: recorded seasons, no internet needed
@@ -269,7 +279,7 @@ Speaker notes: Switch to the live demo here (see docs/DEMO_SCRIPT.md).
 
 ---
 
-## Slide 24: Limitations
+## Slide 25: Limitations
 - LLM numbers reported here come from the offline reasoner, not a language model
 - Daily granularity: the agent cannot micro-manage individual turns
 - Opponent is a simple built-in bot; the real competition is head-to-head against strong agents
@@ -281,7 +291,7 @@ Speaker notes: Showing limitations openly builds trust with the panel.
 
 ---
 
-## Slide 25: Conclusion and future scope
+## Slide 26: Conclusion and future scope
 - An agentic design (tools + look-ahead + guardrails + coordination) beats a classic heuristic by about 3x
 - Every decision is explainable and auditable in the reasoning trace
 - Future: evaluate real LLMs over many seeds; compare with an RL policy (PPO) on the same environment
@@ -292,7 +302,7 @@ Speaker notes: End on the general lesson: give an LLM good tools and a simulator
 
 ---
 
-## Slide 26: References
+## Slide 27: References
 1. S. Yao et al., "ReAct: Synergizing Reasoning and Acting in Language Models," ICLR 2023 (arXiv:2210.03629, 2022).
 2. N. Shinn et al., "Reflexion: Language Agents with Verbal Reinforcement Learning," NeurIPS 2023.
 3. T. Schick et al., "Toolformer: Language Models Can Teach Themselves to Use Tools," NeurIPS 2023.

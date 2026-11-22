@@ -131,6 +131,11 @@ Open the **Research** tab and walk through the four numbers at the top:
 - "Look-ahead is worth 29% of profit: we proved it by switching it off."
 - "Verified reflection: the agent tests its own lessons before trusting them. A novice gains 27% on unseen seasons."
 - "Competition costs about 45%: two smart farmers crash each other's prices."
+- Scroll to **RQ5**: "We also ran real Gemini for full seasons. Left alone it never used its
+  simulator. With our test-before-act rule it gained 18.5%. And every season ran with zero crashes,
+  because the guardrails caught 16 to 40 bad plans."
+- Optional: in the sidebar, pick the recorded run marked with a dot, "LLM single-agent (gemini) ·
+  test-before-act", and open Agent's mind to show a real model's reasoning.
 - "Our surprise result: the single agent wins head-to-head against the higher-earning team, because
   the team's simulator assumes a weak rival. Planning with the wrong opponent model is worse than planning less."
 

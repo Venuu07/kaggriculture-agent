@@ -15,13 +15,15 @@ is adopted, takes a novice agent from $53.3k to $67.6k (**+27%**) on held-out se
 correctly rejects lessons that do not generalise. In a two-player round-robin on a shared
 market, a smart agent facing a copy of itself loses **about 45% of its profit**. The team that
 earns the most on average does not win the most games: its look-ahead assumes a naive rival.
+**(RQ5)** Real Gemini seasons show that a real LLM **under-uses its tools** (it never simulated a
+plan on its own), and that a one-rule *test-before-act* policy raises its profit by 18.5%.
 
-> **Scope of the claims.** The LLM-agent numbers come from the **offline reasoner**: a
+> **Scope of the claims.** RQ1–RQ4 use the **offline reasoner**: a
 > deterministic, rule-based stand-in that drives the same ReAct loop, tools, memory, guardrails
 > and multi-agent code as a real LLM, but is not a language model. The findings are therefore
 > about the *agent architecture* (tools, look-ahead, coordination, verified reflection), not
 > about any particular model. Real-LLM numbers can be added with
-> `python -m kagri.evaluate --provider gemini --seeds 1`.
+> `python -m kagri.evaluate --provider gemini --seeds 1`. **RQ5 uses real Gemini seasons.**
 
 ## 1. Setup
 
@@ -118,7 +120,45 @@ invests harder in the same crops as a smart rival and suffers a deeper glut. **P
 wrong opponent model is worse than planning less.** This motivates opponent-aware look-ahead
 (future work).
 
-## 6. Threats to validity
+## 6. RQ5: How does a real LLM behave?
+
+We recorded three full seasons with **Google Gemini** (free tier, `gemini-3.6-flash` with
+`3.5-flash` / `3.1-flash-lite` as rate-limit fallbacks) on seed 0, the same farm and weather as
+the other agents' seed-0 runs (`runs/recorded_*.jsonl`, replayable in the dashboard).
+
+| Agent (seed 0, same farm and weather) | Profit | LLM calls | Days using tools | Simulations | Guardrail fixes | Cost (list price) |
+|---|---|---|---|---|---|---|
+| LLM multi-agent, offline reasoner | $98,156 | – | 30 / 30 | 76 | 0 | $0 |
+| LLM single-agent, offline reasoner | $81,188 | – | 30 / 30 | 48 | 0 | $0 |
+| **Gemini single-agent + test-before-act** | **$48,617** | 90 | 29 / 30 | 30 | 40 | $0.067 |
+| **Gemini single-agent** | **$41,018** | 34 | 2 / 30 | **0** | 0 | $0.027 |
+| **Gemini multi-agent team** | **$31,197** | 123 | 3 / 30 | 1 | 16 | $0.079 |
+| Greedy heuristic | $29,709 | – | – | – | – | $0 |
+| Random | $6,667 | – | – | – | – | $0 |
+
+**Findings.**
+1. **Real LLMs under-use their tools.** Left alone, Gemini used a tool on 2 of 30 days and
+   **never simulated a plan**. It behaved like the "no look-ahead" ablation of RQ1, and its profit
+   ($41k) sits far below the tool-heavy offline reasoner ($81k), though above Greedy (+38%).
+2. **A one-rule policy helps.** *Test-before-act* (if the model tries to commit without
+   simulating, the loop asks it to simulate first) made Gemini simulate on 29 of 30 days and
+   raised profit **+18.5%** ($41.0k → $48.6k) for 4 extra cents.
+3. **More agents is not automatically better.** The real multi-agent team made 3.6× the calls of
+   the single agent but simulated once all season and earned the least ($31.2k). Specialists that
+   each skip the tools add coordination cost without adding thinking. With the offline reasoner,
+   where every role does use the tools, the team was the best agent, so *how* agents use tools
+   matters more than *how many* agents there are.
+4. **Guardrails are load-bearing with real models.** Gemini planned 25 plots with 0 workers, and
+   spent all but $68 on day 0 (land + 24 melons). The labour and budget guardrails fixed these
+   (16–40 times per season), and no season needed a single fallback plan.
+5. **Cost is negligible; rate limits are not.** A season costs 3–8 cents at list price ($0 on the
+   free tier). The real constraint is the free tier's 5 requests per minute per model: a
+   single-agent season takes about 20–40 minutes and the team over an hour.
+
+**Caveat.** One seed per configuration: these are case studies, not significance tests. They
+are consistent with RQ1, where removing look-ahead cost 29%.
+
+## 7. Threats to validity
 
 - **Offline reasoner.** Its strength reflects our domain rules; a real LLM may choose
   differently. The architecture claims (look-ahead, verification, coordination) still hold,
@@ -129,7 +169,7 @@ wrong opponent model is worse than planning less.** This motivates opponent-awar
 - **Our weather layer** is an extension. `--no-events` gives competition-pure runs, and
   real-weather mode replaces the random weather with historical data.
 
-## 7. Future work
+## 8. Future work
 
 1. **Opponent-aware look-ahead:** simulate the rival as a copy of ourselves, or infer its
    strategy from its visible farm (the observation shows the rival's tiles).
@@ -139,7 +179,7 @@ wrong opponent model is worse than planning less.** This motivates opponent-awar
 4. **Real markets:** drive prices with mandi price series (Agmarknet) alongside the real-weather mode.
 5. **Learning baselines:** a PPO policy on `FarmEnv` for an LLM-vs-RL comparison.
 
-## 8. Reproduce everything
+## 9. Reproduce everything
 
 ```bash
 python -m kagri.evaluate      # main comparison (~1 min)

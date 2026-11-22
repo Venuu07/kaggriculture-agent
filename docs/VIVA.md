@@ -130,3 +130,23 @@ Open-Meteo archive and maps each day to the game's weather: heavy rain (15 mm or
 season is cached, so it then runs offline. It turns the game into a what-if tool: how would this
 strategy have done in Anantapur's July?
 
+### 33. Did you test with a real LLM? What happened?
+Yes, three full seasons with Google Gemini on seed 0 (free tier). Gemini alone earned $41,018:
+38% more than Greedy, but less than the offline reasoner, because it used tools on only 2 of 30
+days and never simulated a plan. With our test-before-act policy it simulated on 29 days and
+earned $48,617 (+18.5%). The Gemini multi-agent team earned $31,197. Every season ran with zero
+fallback plans; the guardrails repaired 16 to 40 risky plans per season.
+
+### 34. Why did the real multi-agent team do worse than the single agent?
+Each specialist skipped the simulation tool too, so the team made 3.6 times more calls without
+doing more analysis, and the Manager merged partial plans that were never tested together. With
+the offline reasoner every role does use the tools, and there the team was best. The lesson: the
+number of agents matters less than whether they actually use their tools. Test-before-act on the
+Manager is the natural next experiment.
+
+### 35. Is the LLM a cost bottleneck?
+No. A season costs 3 to 8 cents at list price and nothing on the free tier, because the agent
+makes 30 decisions per season, not 720. The bottleneck is the free tier's rate limit (5 requests
+per minute per model), which we handle by rotating between three Gemini models. For faster demos,
+Groq's free tier or a local model through Ollama use the same provider interface.
+

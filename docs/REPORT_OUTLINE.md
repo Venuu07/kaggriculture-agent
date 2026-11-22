@@ -331,7 +331,23 @@ near $3.2k to $3.5k in every run.
 - Historical daily weather for Indian districts from the Open-Meteo archive, mapped to game weather.
 - Insert a run here if fetched (e.g. Anantapur, July 2025) and compare with simulated weather.
 
-### 7.11 Threats to validity
+### 7.11 Real LLM case study (RQ5; `runs/recorded_*.jsonl`, Research tab)
+
+| Agent (seed 0, same farm and weather) | Profit | LLM calls | Days using tools | Simulations | Guardrail fixes | Cost (list price) |
+|---|---|---|---|---|---|---|
+| LLM multi-agent, offline reasoner | $98,156 | – | 30 / 30 | 76 | 0 | $0 |
+| LLM single-agent, offline reasoner | $81,188 | – | 30 / 30 | 48 | 0 | $0 |
+| **Gemini single-agent + test-before-act** | **$48,617** | 90 | 29 / 30 | 30 | 40 | $0.067 |
+| **Gemini single-agent** | **$41,018** | 34 | 2 / 30 | **0** | 0 | $0.027 |
+| **Gemini multi-agent team** | **$31,197** | 123 | 3 / 30 | 1 | 16 | $0.079 |
+| Greedy heuristic | $29,709 | – | – | – | – | $0 |
+| Random | $6,667 | – | – | – | – | $0 |
+
+- Gemini under-uses tools (2/30 days, 0 simulations); test-before-act raises profit 18.5%.
+- The real multi-agent team is the weakest LLM agent: more calls, no simulations.
+- Guardrails repaired 16-40 plans per season; 0 fallback days; 3-8 cents per season.
+
+### 7.12 Threats to validity
 - Small number of seeds; high variance for the agents.
 - Offline reasoner is hand-designed, so its strength reflects our domain rules.
 - Weak opponent; weather layer is our own.

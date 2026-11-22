@@ -24,6 +24,7 @@ Four experiments, each reproducible with one command (full write-up: [docs/RESEA
 | RQ1: Which component earns the money? | **Look-ahead simulation is worth 29% of profit**, land 26%, animals 19%, the team 11%, glut-awareness 10% | `python -m kagri.ablation` |
 | RQ2: Can the agent learn from its own seasons? | **Verified reflection** (lessons tested in simulation before adoption) lifts a novice **+27%** on held-out seasons and rejects lessons that don't transfer | `python -m kagri.reflection` |
 | RQ3: What does a rival on the same market cost? | A smart agent facing a copy of itself loses **~45% of its profit** (shared-market gluts) | `python -m kagri.arena` |
+| RQ5: How does a real LLM behave? | Real Gemini **never simulated a plan on its own** ($41k, still +38% over Greedy). A one-rule **test-before-act** policy lifted it **+18.5%** to $48.6k. The real multi-agent team earned least ($31k): agents that skip their tools add cost, not thinking. A season costs 3–8 cents | `python -m kagri.record --provider gemini [--test-before-act]` |
 | RQ4: Who wins head-to-head? | The single agent beats the higher-earning team 6/6 times: **planning with a wrong opponent model is worse than planning less** | `python -m kagri.arena` |
 
 ![Research tab](docs/img/ui_research.png)
@@ -44,7 +45,8 @@ built-in "starter" opponent ends near $3,500.
 > deterministic rule-based stand-in that drives the same ReAct loop, tools, memory and multi-agent
 > code, but is **not a language model**. It exists so that everything runs with no API key or
 > internet. To measure a real LLM, add a key and run
-> `python -m kagri.evaluate --provider gemini --seeds 1`. With the offline reasoner, reflection
+> `python -m kagri.evaluate --provider gemini --seeds 1`. Three **real Gemini seasons** are
+> recorded in `runs/` and compared in RQ5 below. With the offline reasoner, reflection
 > produced lessons but did not change profit (flat curve in `results/reflection.png`).
 
 Charts: `results/profit_by_agent.png`, `profit_over_time.png`, `action_distribution.png`,
