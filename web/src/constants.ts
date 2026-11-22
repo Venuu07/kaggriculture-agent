@@ -22,6 +22,7 @@ export const ROLE: Record<string, { icon: string; name: string; tone: string }> 
   agronomist: { icon: "A", name: "Agronomist", tone: "teal" },
   manager: { icon: "G", name: "Manager", tone: "violet" },
   system: { icon: "!", name: "Guardrail", tone: "red" },
+  shopkeeper: { icon: "S", name: "Shopkeeper", tone: "green" },
 };
 
 /** Categorical palette in fixed order (Random, Greedy, LLM single, LLM multi); each mode validated

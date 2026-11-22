@@ -1,0 +1,82 @@
+[
+ {
+  "agent": "agent",
+  "label": "AI shopkeeper (offline)",
+  "seed": 0,
+  "profit": 63739,
+  "units_wasted": 0,
+  "customers_lost": 210
+ },
+ {
+  "agent": "agent",
+  "label": "AI shopkeeper (offline)",
+  "seed": 1,
+  "profit": 60688,
+  "units_wasted": 7,
+  "customers_lost": 195
+ },
+ {
+  "agent": "agent",
+  "label": "AI shopkeeper (offline)",
+  "seed": 2,
+  "profit": 61101,
+  "units_wasted": 19,
+  "customers_lost": 193
+ },
+ {
+  "agent": "agent",
+  "label": "AI shopkeeper (offline)",
+  "seed": 3,
+  "profit": 61904,
+  "units_wasted": 0,
+  "customers_lost": 294
+ },
+ {
+  "agent": "agent",
+  "label": "AI shopkeeper (offline)",
+  "seed": 4,
+  "profit": 61642,
+  "units_wasted": 0,
+  "customers_lost": 292
+ },
+ {
+  "agent": "baseline",
+  "label": "Fixed restock rule",
+  "seed": 0,
+  "profit": 35663,
+  "units_wasted": 0,
+  "customers_lost": 1769
+ },
+ {
+  "agent": "baseline",
+  "label": "Fixed restock rule",
+  "seed": 1,
+  "profit": 35750,
+  "units_wasted": 2,
+  "customers_lost": 1575
+ },
+ {
+  "agent": "baseline",
+  "label": "Fixed restock rule",
+  "seed": 2,
+  "profit": 35359,
+  "units_wasted": 14,
+  "customers_lost": 1604
+ },
+ {
+  "agent": "baseline",
+  "label": "Fixed restock rule",
+  "seed": 3,
+  "profit": 35766,
+  "units_wasted": 0,
+  "customers_lost": 1753
+ },
+ {
+  "agent": "baseline",
+  "label": "Fixed restock rule",
+  "seed": 4,
+  "profit": 35729,
+  "units_wasted": 1,
+  "customers_lost": 1656
+ }
+]

@@ -33,6 +33,7 @@ from .env import FarmEnv
 from .llm.providers import provider_ready
 from .play import router as play_router
 from .scenarios import router as scenario_router
+from .shop.agent import router as shop_router
 from .runner import load_run, snapshot
 
 WEB_DIST = ROOT / "web" / "dist"
@@ -44,6 +45,7 @@ app = FastAPI(title="Kaggriculture Agent API")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 app.include_router(play_router)
 app.include_router(scenario_router)
+app.include_router(shop_router)
 
 _sessions: dict[str, dict[str, Any]] = {}
 _lock = threading.Lock()

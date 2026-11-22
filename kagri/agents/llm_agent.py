@@ -8,8 +8,6 @@ retry on bad JSON, safe fallback plan, token / cost / latency counters.
 from __future__ import annotations
 
 import json
-import re
-import time
 from pathlib import Path
 from typing import Any
 
@@ -20,7 +18,8 @@ from .base import Agent, Decision
 from .memory import LongTermMemory, ShortTermMemory
 from .prompts import REFLECT_SYSTEM, day_message, system_prompt
 from .strategy import hands_needed, strategic_plan
-from .tools import ToolBox, compact
+from .core import parse_json, react_loop  # noqa: F401  (parse_json re-exported)
+from .tools import ToolBox
 
 ROLE_TOOLS = {
     "single": None,
@@ -31,34 +30,6 @@ ROLE_TOOLS = {
 }
 ROLE_KEYS = {"planner": ["plant", "buy_land", "buy_animals"], "market": ["sell"],
              "agronomist": ["fertilise", "hands"]}
-
-
-def parse_json(text: str) -> dict[str, Any] | None:
-    """Pull the first JSON object out of a model reply (handles ```json fences and chatter)."""
-    if not text:
-        return None
-    text = re.sub(r"```(?:json)?", "", text).strip()
-    try:
-        obj = json.loads(text)
-        return obj if isinstance(obj, dict) else None
-    except json.JSONDecodeError:
-        pass
-    start = text.find("{")
-    while start != -1:
-        depth = 0
-        for i in range(start, len(text)):
-            if text[i] == "{":
-                depth += 1
-            elif text[i] == "}":
-                depth -= 1
-                if depth == 0:
-                    try:
-                        obj = json.loads(text[start:i + 1])
-                        return obj if isinstance(obj, dict) else None
-                    except json.JSONDecodeError:
-                        break
-        start = text.find("{", start + 1)
-    return None
 
 
 class LLMAgent(Agent):
@@ -121,66 +92,13 @@ class LLMAgent(Agent):
                proposals: dict[str, Any] | None = None) -> dict[str, Any] | None:
         allowed = ROLE_TOOLS[role]
         max_tools = self.max_tools if role in ("single", "planner") else 2
-        system = system_prompt(role, toolbox.describe(allowed), self.lessons_text, max_tools)
-        messages = [{"role": "user", "content": day_message(obs, self.stm.render(), proposals)}]
-        steps: list[dict[str, Any]] = []
-        tool_calls = bad_json = forced = 0
-        nudged = False
-        while True:
-            ctx = {"role": role, "obs": obs, "env": env, "steps": steps, "params": self.params,
-                   "proposals": proposals}
-            reply = self.provider.respond(system, messages, ctx)
-            self._account(reply)
-            parsed = parse_json(reply.text)
-            if parsed is None or "action" not in parsed:
-                bad_json += 1
-                trace.append({"type": "error", "agent": role, "text": f"invalid JSON reply #{bad_json}: {reply.text[:200]}"})
-                if bad_json > self.max_retries:
-                    return None
-                messages += [{"role": "assistant", "content": reply.text or "(empty)"},
-                             {"role": "user", "content": 'Invalid reply. Answer with ONE JSON object: '
-                                                         '{"thought": "...", "action": "...", "args": {...}}'}]
-                continue
-            thought = str(parsed.get("thought", ""))
-            action = str(parsed.get("action", ""))
-            args = parsed.get("args") if isinstance(parsed.get("args"), dict) else {}
-            trace.append({"type": "thought", "agent": role, "text": thought})
-            if (action in ("take_action", "final") and self.test_before_act and role in ("single", "manager")
-                    and not nudged and tool_calls < max_tools
-                    and not any(st["name"] == "simulate_action" for st in steps)):
-                nudged = True
-                trace.append({"type": "guardrail", "agent": role,
-                              "text": "Test-before-act policy: simulate the plan before committing."})
-                messages += [{"role": "assistant", "content": reply.text},
-                             {"role": "user", "content": 'Before committing, test this plan with simulate_action '
-                              '(args: {"plan": <your plan>, "days": 8}), compare it with at least one alternative '
-                              'if you have tool calls left, then take_action with the better plan.'}]
-                continue
-            if action in ("take_action", "final", "propose"):
-                plan = args.get("plan", args)
-                if not isinstance(plan, dict):
-                    plan = {}
-                if role in ROLE_KEYS:
-                    plan = {k: v for k, v in plan.items() if k in ROLE_KEYS[role]}
-                trace.append({"type": "action", "agent": role, "plan": plan})
-                return plan
-            if tool_calls >= max_tools or (allowed is not None and action not in allowed):
-                forced += 1
-                why = "Tool budget used up" if tool_calls >= max_tools else f"Tool '{action}' is not available to you"
-                trace.append({"type": "guardrail", "agent": role, "text": why})
-                if forced > 2:
-                    return None
-                messages += [{"role": "assistant", "content": reply.text},
-                             {"role": "user", "content": f"{why}. Reply now with action take_action and your plan."}]
-                continue
-            t0 = time.perf_counter()
-            result = toolbox.call(action, args)
-            steps.append({"name": action, "args": args, "result": result})
-            trace.append({"type": "tool", "agent": role, "name": action, "args": args, "result": result,
-                          "ms": round(1000 * (time.perf_counter() - t0))})
-            tool_calls += 1
-            messages += [{"role": "assistant", "content": reply.text},
-                         {"role": "user", "content": f"Result of {action}: {compact(result)}"}]
+        return react_loop(
+            provider=self.provider, role=role, toolbox=toolbox, trace=trace, account=self._account,
+            system=system_prompt(role, toolbox.describe(allowed), self.lessons_text, max_tools),
+            first_message=day_message(obs, self.stm.render(), proposals),
+            ctx={"obs": obs, "env": env, "params": self.params, "proposals": proposals},
+            max_tools=max_tools, max_retries=self.max_retries, allowed=allowed, keep_keys=ROLE_KEYS.get(role),
+            test_before_act=self.test_before_act and role in ("single", "manager"))
 
     def _team(self, obs: dict[str, Any], env: FarmEnv, toolbox: ToolBox,
               trace: list[dict[str, Any]]) -> dict[str, Any] | None:

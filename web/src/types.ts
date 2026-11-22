@@ -92,3 +92,15 @@ export interface ScenarioRun {
   notes: { day: number; events: string[]; weather: string; thought: string; plan: Plan; reward: number }[];
 }
 export interface ScenarioResult { scenario: string; title: string; blurb: string; seed: number; event_days: number[]; runs: ScenarioRun[] }
+
+export interface ShopProduct { stock: number; batches: { qty: number; days_left: number }[]; on_order: number; price: number; usual_price: number }
+export interface ShopObs { day: number; cash: number; products: Record<string, ShopProduct> }
+export interface ShopDay {
+  day: number; before: ShopObs; trace: TraceStep[]; plan: { order?: Record<string, number>; price?: Record<string, number> };
+  rejected: string[]; reward: number; cash: number; sold: Record<string, number>; demand: Record<string, number>;
+  wasted: Record<string, number>; events: { weather: string; events: string[] }; tokens: number; llm_calls: number; latency_s: number; fallback: boolean;
+}
+export interface ShopData {
+  results: { agent: string; label: string; seed: number; profit: number; units_wasted: number; customers_lost: number }[];
+  runs: Record<string, { days: ShopDay[] }>;
+}

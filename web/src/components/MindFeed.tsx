@@ -3,10 +3,10 @@ import { ROLE, money } from "../constants";
 import type { DayRecord, Plan, TraceStep } from "../types";
 import { PlanChips } from "./PlanChips";
 
-interface Props { record?: DayRecord; animate: boolean; stepMs?: number }
+interface Props { record?: DayRecord; animate: boolean; stepMs?: number; currency?: string }
 
 /** The agent's reasoning for one day: thought -> tool call -> result -> ... -> action, revealed step by step. */
-export function MindFeed({ record, animate, stepMs = 450 }: Props) {
+export function MindFeed({ record, animate, stepMs = 450, currency = "$" }: Props) {
   const steps = record?.trace ?? [];
   const [shown, setShown] = useState(animate ? 0 : steps.length);
 
@@ -32,7 +32,7 @@ export function MindFeed({ record, animate, stepMs = 450 }: Props) {
             {record.llm_calls > 0 && <span>{record.llm_calls} LLM calls</span>}
             {record.tokens > 0 && <span>{record.tokens.toLocaleString()} tokens</span>}
             {record.latency_s > 0 && <span>{record.latency_s.toFixed(1)}s</span>}
-            <span className={record.reward >= 0 ? "pos" : "neg"}>day result {record.reward >= 0 ? "+" : ""}{money(record.reward)}</span>
+            <span className={record.reward >= 0 ? "pos" : "neg"}>day result {record.reward >= 0 ? "+" : ""}{money(record.reward).replace("$", currency)}</span>
           </div>
         </div>
         {record.fallback && <span className="badge red">Fallback plan used</span>}
@@ -43,7 +43,7 @@ export function MindFeed({ record, animate, stepMs = 450 }: Props) {
       </ol>
       {!thinking && (
         <div className="outcome fade-in">
-          <div className="eyebrow">Executed by the Foreman (after guardrails)</div>
+          <div className="eyebrow">Executed after guardrails</div>
           <PlanChips plan={record.plan as Plan} />
           {record.rejected.length > 0 && (
             <ul className="rejected">{record.rejected.map((r, i) => <li key={i}>Guardrail: {r}</li>)}</ul>
@@ -86,7 +86,7 @@ function Step({ step }: { step: TraceStep }) {
     return (
       <li className={`step action fade-in tone-${role.tone}`}>
         {who}
-        <div className="action-label">{step.agent === "single" || step.agent === "manager" ? "take_action(plan)" : "propose(plan)"}</div>
+        <div className="action-label">{["planner", "market", "agronomist"].includes(step.agent) ? "propose(plan)" : "take_action(plan)"}</div>
         <PlanChips plan={step.plan as Plan} />
       </li>
     );
