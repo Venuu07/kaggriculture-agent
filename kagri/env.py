@@ -32,7 +32,7 @@ class FarmEnv:
     """Gym-style farm environment. Deterministic given a seed."""
 
     def __init__(self, events: bool | None = None, opponent: str | None = None,
-                 config: dict[str, Any] | None = None) -> None:
+                 config: dict[str, Any] | None = None, weather: str | None = None) -> None:
         self.cfg = config or load_config()
         g = self.cfg["game"]
         self.turns_per_day = int(g["turns_per_day"])
@@ -47,6 +47,11 @@ class FarmEnv:
         self.price_history: list[dict[str, int]] = []
         self.event_log: list[dict[str, Any]] = []
         self.me = 0  # which seat this view controls (0 or 1); see view()
+        self.real_weather: dict[str, Any] | None = None
+        if weather:
+            from .realweather import load_season
+            self.real_weather = load_season(weather)
+            self.events_on = True
 
     @property
     def them(self) -> int:
@@ -253,6 +258,9 @@ class FarmEnv:
 
     # --------------------------------------------------------------- events
     def _roll_weather(self) -> list[str]:
+        if self.real_weather:
+            days = [d["weather"] for d in self.real_weather["days"]]
+            return (days + ["sunny"] * self.n_days)[: self.n_days]
         rng = random.Random(self.seed * 7919 + 17)
         probs = self.cfg["events"]["weather_probs"]
         names = list(probs)
@@ -311,7 +319,11 @@ class FarmEnv:
             o.market["inventory"][item] += delta
             kg._refresh_prices(o.market)
             notes.append(f"Price shock: {'glut' if glut else 'shortage'} of {item}, price now ${o.market['prices'][item]}.")
-        record = {"day": day, "weather": weather, "events": notes}
+        record: dict[str, Any] = {"day": day, "weather": weather, "events": notes}
+        if self.real_weather and day < len(self.real_weather["days"]):
+            real = self.real_weather["days"][day]
+            record["real"] = {"date": real["date"], "rain_mm": real["rain_mm"], "tmax_c": real["tmax_c"],
+                              "place": self.real_weather["label"].split(" (")[0]}
         self.event_log.append(record)
         return record
 

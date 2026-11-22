@@ -1,4 +1,4 @@
-import type { ArenaMatch, DayRecord, FarmState, MemoryFile, ProviderInfo, Research, Results, RunData, RunHeader, RunInfo } from "./types";
+import type { WeatherSeason, ArenaMatch, DayRecord, FarmState, MemoryFile, ProviderInfo, Research, Results, RunData, RunHeader, RunInfo } from "./types";
 
 async function get<T>(url: string): Promise<T> {
   const r = await fetch(url);
@@ -23,9 +23,10 @@ export const api = {
   providers: () => get<ProviderInfo[]>("/api/providers"),
   memory: () => get<MemoryFile[]>("/api/memory"),
   research: () => get<Research>("/api/research"),
+  weather: () => get<WeatherSeason[]>("/api/weather"),
   arenaMatches: () => get<string[]>("/api/arena/matches"),
   arenaMatch: (name: string) => get<ArenaMatch>(`/api/arena/matches/${encodeURIComponent(name)}`),
-  liveStart: (body: { agent: string; provider: string; seed: number; events: boolean }) =>
+  liveStart: (body: { agent: string; provider: string; seed: number; events: boolean; weather: string }) =>
     post<{ sid: string; header: RunHeader; state: FarmState; note: string }>("/api/live", body),
   liveStep: (sid: string) =>
     post<{ done: boolean; record: DayRecord | null; state: FarmState }>(`/api/live/${sid}/step`),

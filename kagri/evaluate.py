@@ -59,10 +59,10 @@ def _row(summary: dict[str, Any], provider: str, key: str, episode: int = 1) -> 
     }
 
 
-def _job(args: tuple[str, int, str, bool, str | None]) -> dict[str, Any]:
-    key, seed, provider, events, log = args
+def _job(args: tuple[str, int, str, bool, str | None, str | None]) -> dict[str, Any]:
+    key, seed, provider, events, log, weather = args
     agent = make_agent(key, provider)
-    summary = run_episode(agent, seed, Path(log) if log else None, events=events,
+    summary = run_episode(agent, seed, Path(log) if log else None, events=events, weather=weather,
                           meta={"provider": provider if key.startswith("llm") else "-"})
     return _row(summary, provider, key)
 
@@ -95,6 +95,7 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("--reflection-episodes", type=int, default=3, help="0 to skip the reflection experiment")
     ap.add_argument("--no-events", action="store_true", help="competition-faithful: no weather/events")
     ap.add_argument("--out", default=str(RESULTS_DIR))
+    ap.add_argument("--weather", default=None, help="real-weather season name from data/weather (see kagri.realweather)")
     a = ap.parse_args(argv)
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -104,8 +105,10 @@ def main(argv: list[str] | None = None) -> None:
     keys = [k.strip() for k in a.agents.split(",") if k.strip()]
     t0 = time.time()
 
-    jobs = [(k, s, a.provider, events, str(RUNS_DIR / f"demo_{k}_{a.provider if k.startswith('llm') else 'base'}.jsonl")
-             if s == 0 else None) for k in keys for s in range(a.seeds)]
+    tag = f"_{a.weather}" if a.weather else ""
+    jobs = [(k, s, a.provider, events,
+             str(RUNS_DIR / f"demo_{k}_{a.provider if k.startswith('llm') else 'base'}{tag}.jsonl") if s == 0 else None,
+             a.weather) for k in keys for s in range(a.seeds)]
     print(f"Running {len(jobs)} episodes ({', '.join(keys)}; provider={a.provider}; events={events}) ...")
     rows = _map(_job, jobs, parallel)
     df = pd.DataFrame(rows)

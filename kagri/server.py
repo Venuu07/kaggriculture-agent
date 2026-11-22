@@ -151,6 +151,14 @@ class LiveRequest(BaseModel):
     provider: str = "offline"
     seed: int = 0
     events: bool = True
+    weather: str | None = None
+
+
+@app.get("/api/weather")
+def weather_seasons() -> list[dict[str, Any]]:
+    """Cached real-weather seasons (fetched with python -m kagri.realweather)."""
+    from .realweather import cached_seasons
+    return cached_seasons()
 
 
 @app.post("/api/live")
@@ -165,12 +173,16 @@ def live_start(req: LiveRequest) -> dict[str, Any]:
             note = f"{why} - switched to the offline reasoner."
             provider = "offline"
     agent = make_agent(req.agent, provider)
-    env = FarmEnv(events=req.events)
+    try:
+        env = FarmEnv(events=req.events, weather=req.weather or None)
+    except FileNotFoundError as e:
+        raise HTTPException(400, str(e)) from e
     obs = env.reset(req.seed)
     agent.begin_episode(req.seed)
     sid = uuid.uuid4().hex[:12]
     header = {"type": "header", "agent": agent.name, "label": agent.label, "seed": req.seed,
-              "events": env.events_on, "starting_cash": env.starting_money, "provider": provider, "live": True}
+              "events": env.events_on, "starting_cash": env.starting_money, "provider": provider, "live": True,
+              "weather_source": env.real_weather["label"] if env.real_weather else "simulated"}
     with _lock:
         if len(_sessions) > 20:
             _sessions.pop(next(iter(_sessions)))

@@ -9,7 +9,7 @@ import { PlanChips } from "./components/PlanChips";
 import { ResearchView } from "./components/ResearchView";
 import { ResultsView } from "./components/ResultsView";
 import { WEATHER_ICON, agentColor as colorOf, money, titleCase } from "./constants";
-import type { DayRecord, FarmState, ProviderInfo, RunHeader, RunInfo } from "./types";
+import type { DayRecord, FarmState, ProviderInfo, RunHeader, RunInfo, WeatherSeason } from "./types";
 
 type Tab = "farm" | "mind" | "arena" | "research" | "results" | "how";
 type Mode = "replay" | "live";
@@ -37,7 +37,8 @@ export default function App() {
   const [speed, setSpeed] = useState(2200);
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState("");
-  const [live, setLive] = useState({ agent: "llm_multi", provider: "offline", seed: 0, events: true });
+  const [live, setLive] = useState({ agent: "llm_multi", provider: "offline", seed: 0, events: true, weather: "" });
+  const [seasons, setSeasons] = useState<WeatherSeason[]>([]);
   const [sid, setSid] = useState("");
   const [liveDone, setLiveDone] = useState(false);
   const busyRef = useRef(false);
@@ -50,6 +51,7 @@ export default function App() {
   useEffect(() => {
     api.runs().then((r) => { setRuns(r); if (r.length) setRunName(r[0].name); }).catch((e) => setToast(`Cannot reach the API: ${e}`));
     api.providers().then(setProviders).catch(() => setProviders([]));
+    api.weather().then(setSeasons).catch(() => setSeasons([]));
   }, []);
 
   useEffect(() => {
@@ -147,6 +149,12 @@ export default function App() {
                 <button className={`toggle ${live.events ? "on" : ""}`} onClick={() => setLive({ ...live, events: !live.events })}>{live.events ? "events on" : "off"}</button>
               </div>
             </div>
+            <label className="lbl">Weather source</label>
+            <select value={live.weather} onChange={(e) => setLive({ ...live, weather: e.target.value, events: true })}>
+              <option value="">Simulated (seeded)</option>
+              {seasons.map((s) => <option key={s.name} value={s.name}>Real: {s.label.split(" (")[0]} · {s.start}</option>)}
+            </select>
+            {!seasons.length && <p className="hint">Fetch real weather once: <code>python -m kagri.realweather --district anantapur</code></p>}
             <button className="primary wide" disabled={busy} onClick={startLive}>{sid ? "Restart season" : "Start season"}</button>
           </>
         )}
@@ -171,7 +179,9 @@ export default function App() {
                   <span className="badge gray">seed {header.seed}</span>
                   <span className="badge gray">{mode === "live" ? "LIVE" : "REPLAY"}</span>
                   {isOffline && <span className="badge amber" title="Deterministic rule-based reasoner speaking the same tool protocol; not a language model">offline reasoner · no LLM</span>}
-                  {header.events && <span className="badge gray">weather & events on</span>}
+                  {header.weather_source && header.weather_source !== "simulated"
+                    ? <span className="badge" style={{ color: "var(--t-blue)" }}><i className="d" />real weather · {header.weather_source.split(" (")[0]}</span>
+                    : header.events && <span className="badge gray">weather & events on</span>}
                 </>
               ) : <span className="muted">{mode === "live" ? "Configure the season on the left and press Start." : "Loading runs…"}</span>}
             </div>
@@ -300,6 +310,12 @@ function WeatherCard({ state }: { state: FarmState }) {
         <span className="wx-glyph">{WEATHER_ICON[w] ?? "–"}</span>
         <div><div className="eyebrow">Today</div><b>{w ? titleCase(w) : "–"}</b></div>
       </div>
+      {state.weather?.real && (
+        <div className="real-wx">
+          <span>{state.weather.real.place}</span><span>{state.weather.real.date}</span>
+          <span>{state.weather.real.rain_mm.toFixed(1)} mm rain</span><span>{state.weather.real.tmax_c.toFixed(0)}°C max</span>
+        </div>
+      )}
       {(state.weather?.events ?? []).map((e, i) => <div key={i} className="event fade-in">{e}</div>)}
       {state.forecast?.length > 0 && (
         <div className="forecast">

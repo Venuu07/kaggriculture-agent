@@ -5,7 +5,12 @@ export interface Plot {
   watered: boolean; ready_in: number; fertilised: boolean;
 }
 
-export interface Weather { day?: number; weather?: string; events?: string[] }
+export interface Weather {
+  day?: number; weather?: string; events?: string[];
+  real?: { date: string; rain_mm: number; tmax_c: number; place: string };
+}
+
+export interface WeatherSeason { name: string; label: string; start: string; counts: Record<string, number>; rain_mm: number }
 
 export interface FarmState {
   day: number; cash: number; profit: number; opponent_cash: number;
@@ -34,6 +39,7 @@ export interface DayRecord {
 
 export interface RunHeader {
   agent: string; label: string; seed: number; events: boolean; provider?: string; live?: boolean; model?: string;
+  weather_source?: string;
 }
 
 export interface RunData { header: RunHeader; days: DayRecord[]; summary: { final?: FarmState; profit?: number } }

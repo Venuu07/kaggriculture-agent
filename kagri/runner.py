@@ -18,9 +18,9 @@ def snapshot(obs: dict[str, Any]) -> dict[str, Any]:
 
 
 def run_episode(agent: Agent, seed: int = 0, log_path: Path | None = None, events: bool | None = None,
-                on_day: Any = None, meta: dict[str, Any] | None = None) -> dict[str, Any]:
+                on_day: Any = None, meta: dict[str, Any] | None = None, weather: str | None = None) -> dict[str, Any]:
     """Play a full season. Returns a summary; writes one JSON line per day if `log_path` is set."""
-    env = FarmEnv(events=events)
+    env = FarmEnv(events=events, weather=weather)
     obs = env.reset(seed)
     agent.begin_episode(seed)
     records: list[dict[str, Any]] = []
@@ -30,7 +30,8 @@ def run_episode(agent: Agent, seed: int = 0, log_path: Path | None = None, event
         log_path.parent.mkdir(parents=True, exist_ok=True)
         f = log_path.open("w", encoding="utf-8")
         header = {"type": "header", "agent": agent.name, "label": agent.label, "seed": seed,
-                  "events": env.events_on, "starting_cash": env.starting_money, **(meta or {})}
+                  "events": env.events_on, "starting_cash": env.starting_money,
+                  "weather_source": env.real_weather["label"] if env.real_weather else "simulated", **(meta or {})}
         f.write(json.dumps(header) + "\n")
     done = False
     while not done:

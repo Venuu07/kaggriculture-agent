@@ -415,3 +415,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .rq code { font-size: 11px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; }
 .serif-num { font-family: var(--serif); font-size: 15px; }
 @media (max-width: 1100px) { .arena-grid, .findings { grid-template-columns: 1fr; } .finding { border-left: 0; border-top: 1px solid var(--line); } }
+
+.real-wx { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; font-size: 12px; color: var(--ink-2); font-family: var(--mono); }
+.real-wx span:first-child { color: var(--t-blue); font-family: var(--sans); font-weight: 500; }
+.hint code { font-size: 11px; }
