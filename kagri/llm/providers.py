@@ -68,7 +68,7 @@ class Provider:
             time.sleep(wait)
         t0 = time.time()
         last_err: Exception | None = None
-        for attempt in range(4):
+        for attempt in range(3):
             try:
                 reply = self._call(system, messages)
                 reply.latency_s = time.time() - t0
@@ -78,7 +78,7 @@ class Provider:
                 status = e.response.status_code if e.response is not None else 0
                 last_err = LLMError(f"{self.name} HTTP {status}: {e.response.text[:300] if e.response is not None else e}")
                 if status in (429, 500, 502, 503, 504):
-                    time.sleep(min(60, 5 * 2 ** attempt))
+                    time.sleep(min(12, 3 * 2 ** attempt))
                     continue
                 break
             except requests.RequestException as e:
@@ -99,14 +99,38 @@ def _key(var: str) -> str:
 
 
 class GeminiProvider(Provider):
+    """GEMINI_MODEL may list fallbacks, e.g. "gemini-3.6-flash,gemini-3.5-flash": a busy (503) or
+    retired (404) model is skipped for the next one, and the first that answers is remembered."""
+
     name = "gemini"
+
+    def __init__(self) -> None:
+        super().__init__()
+        raw = os.getenv("GEMINI_MODEL", "gemini-3.6-flash,gemini-3.5-flash,gemini-3.1-flash-lite")
+        self.models = [m.strip() for m in raw.split(",") if m.strip()]
 
     @property
     def model(self) -> str:
-        return os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+        return self.models[0]
 
     def _call(self, system: str, messages: list[dict[str, str]]) -> LLMReply:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent"
+        last: requests.HTTPError | None = None
+        for i, model in enumerate(list(self.models)):
+            try:
+                reply = self._call_model(model, system, messages)
+                if i:
+                    self.models.insert(0, self.models.pop(i))
+                return reply
+            except requests.HTTPError as e:
+                status = e.response.status_code if e.response is not None else 0
+                if status in (404, 503) and i + 1 < len(self.models):
+                    last = e
+                    continue
+                raise
+        raise last or LLMError("no Gemini model available")
+
+    def _call_model(self, model: str, system: str, messages: list[dict[str, str]]) -> LLMReply:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
         body = {
             "systemInstruction": {"parts": [{"text": system}]},
             "contents": [{"role": "model" if m["role"] == "assistant" else "user", "parts": [{"text": m["content"]}]}

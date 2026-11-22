@@ -19,7 +19,7 @@ from ..llm.providers import LLMError, Provider, get_provider
 from .base import Agent, Decision
 from .memory import LongTermMemory, ShortTermMemory
 from .prompts import REFLECT_SYSTEM, day_message, system_prompt
-from .strategy import strategic_plan
+from .strategy import hands_needed, strategic_plan
 from .tools import ToolBox, compact
 
 ROLE_TOOLS = {
@@ -107,6 +107,7 @@ class LLMAgent(Agent):
             plan = strategic_plan(obs, self.params)
             trace.append({"type": "fallback", "agent": "system",
                           "text": "LLM reply unusable - using the deterministic safe plan.", "plan": plan})
+        plan = labour_guardrail(plan, obs, trace)
         return Decision(plan=plan, trace=trace, tokens=self._stats["tokens"], cost_usd=self._stats["cost"],
                         latency_s=self._stats["latency"], llm_calls=self._stats["calls"], fallback=fallback)
 
@@ -196,6 +197,32 @@ class LLMAgent(Agent):
         if lessons:
             self.ltm.add({"episode": len(self.ltm.entries) + 1, "seed": self.seed, "profit": round(summary["profit"]),
                           "lessons": lessons, "params": parsed.get("params", {})})
+
+
+def labour_guardrail(plan: dict[str, Any], obs: dict[str, Any], trace: list[dict[str, Any]]) -> dict[str, Any]:
+    """Every plant must be watered daily or it dies. Catches clear under-staffing (fewer than half the
+    hands the workload needs, e.g. 0 hands for 25 new plots) and tops hands up; small deliberate
+    trims, such as one fewer hand on a rainy day, are left alone."""
+    if not isinstance(plan, dict):
+        return plan
+    new_tiles = sum(_ints((plan.get("plant") or {}).values())) + sum(_ints((plan.get("buy_animals") or {}).values()))
+    need = hands_needed(obs, new_tiles)
+    have = _ints([plan.get("hands", 0)])[0] if plan.get("hands") is not None else 0
+    if have * 2 < need:
+        plan = {**plan, "hands": need}
+        trace.append({"type": "guardrail", "agent": "system",
+                      "text": f"Labour check: {have} hands cannot water {new_tiles} new + existing tiles; raised to {need}."})
+    return plan
+
+
+def _ints(values: Any) -> list[int]:
+    out = []
+    for v in values:
+        try:
+            out.append(int(v))
+        except (TypeError, ValueError):
+            out.append(0)
+    return out
 
 
 def season_evidence(summary: dict[str, Any]) -> dict[str, Any]:

@@ -14,7 +14,7 @@ Animals (one plot each, eat 1 wheat/day): GOOSE $300 (egg/day ~$50), COW $400 (m
   SHEEP $500 (wool/3d ~$200). Every animal also drops 1 FERTILISER/day (sells ~$100, or doubles crop yield bonus).
 Market: prices fall as you sell (premium goods MELON/STRAWBERRY/MILK/WOOL crash fast to $1) and recover
 only slowly through town demand. Avoid gluts: diversify crops and spread premium sales.
-Land: buy_land unlocks 25 more plots ($1000, then $2000, then $4000). Hands cost $1,1,2,3,5,8,13,21,34,55 per day (max 10); each hand tends ~6 tiles.
+Land: buy_land unlocks 25 more plots ($1000, then $2000, then $4000). Hands cost $1,1,2,3,5,8,13,21,34,55 per day (max 10); each hand tends ~6 tiles. Plants not watered for 2 days die, so ALWAYS set "hands" to about (plants + animals) / 6.
 Our extension: weather (drought = unwatered plants die, heavy rain = free watering), pests, price shocks."""
 
 PLAN_SCHEMA = """PLAN (all keys optional):
