@@ -1,0 +1,29 @@
+[
+  {
+    "episode": 1,
+    "seed": 0,
+    "profit": 81188,
+    "lessons": [
+      "Season made $81188; the plan worked, keep the same balance of crops and animals."
+    ],
+    "params": {}
+  },
+  {
+    "episode": 2,
+    "seed": 0,
+    "profit": 81188,
+    "lessons": [
+      "Season made $81188; the plan worked, keep the same balance of crops and animals."
+    ],
+    "params": {}
+  },
+  {
+    "episode": 3,
+    "seed": 0,
+    "profit": 81188,
+    "lessons": [
+      "Season made $81188; the plan worked, keep the same balance of crops and animals."
+    ],
+    "params": {}
+  }
+]

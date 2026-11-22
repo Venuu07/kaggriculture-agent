@@ -95,8 +95,9 @@ class OfflineReasoner(Provider):
             name, plan = cands[len(sims)]
             mix = steps[1]["result"].get("mix", {})
             lead = f"Suggested mix {mix}. " if len(sims) == 0 else ""
-            return _say(f"{lead}Simulating candidate '{name}' ({_brief(plan)}) 5 days ahead.",
-                        "simulate_action", {"plan": plan, "days": 5})
+            days = int((ctx.get("params") or {}).get("lookahead_days", 5))
+            return _say(f"{lead}Simulating candidate '{name}' ({_brief(plan)}) {days} days ahead.",
+                        "simulate_action", {"plan": plan, "days": days})
         scored = [(s["result"].get("net_worth_change", -1e9), cands[i][0], cands[i][1]) for i, s in enumerate(sims)]
         best = max(scored, key=lambda t: t[0]) if scored else (0, cands[0][0], cands[0][1])
         plan = dict(best[2])

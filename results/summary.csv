@@ -1,0 +1,5 @@
+agent,label,mean_profit,std_profit,min_profit,max_profit,mean_tokens,mean_cost_usd,latency_per_decision_s,tool_calls,fallback_days
+random,Random,11060.0,4061.4,6667,15866,0.0,0.0,0.0,0.0,0.0
+greedy,Greedy heuristic,30020.8,980.4,28484,30866,0.0,0.0,0.0,0.0,0.0
+llm_single,LLM single-agent (offline),79343.8,16125.6,61166,104187,0.0,0.0,0.1,108.0,0.0
+llm_multi,LLM multi-agent (offline),88793.8,11840.4,78757,104737,0.0,0.0,0.1,177.4,0.0
