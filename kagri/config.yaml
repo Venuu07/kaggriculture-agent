@@ -37,7 +37,7 @@ events:
   price_shock_prob: 0.08    # sudden glut or shortage of one product
 
 foreman:                    # the deterministic executor that turns a daily plan into moves
-  max_hands: 6
+  max_hands: 10
   final_day_sell_hour: 12   # on the last day, units drop stock at the shed from this hour
 
 llm:

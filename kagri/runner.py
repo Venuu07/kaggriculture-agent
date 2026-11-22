@@ -39,6 +39,7 @@ def run_episode(agent: Agent, seed: int = 0, log_path: Path | None = None, event
         decision = agent.decide(obs, env)
         latency = decision.latency_s or (time.perf_counter() - t0)
         obs, reward, done, info = env.step(decision.plan)
+        agent.after_step(info, reward)
         rec = {"type": "day", "day": info["day"], "before": before, "trace": decision.trace,
                "plan_requested": decision.plan, "plan": info["plan"], "rejected": info["rejected"],
                "events": info["events"], "sales": info["sales"], "reward": reward, "cash": env.cash,
@@ -57,10 +58,9 @@ def run_episode(agent: Agent, seed: int = 0, log_path: Path | None = None, event
             on_day(rec, obs)
     summary = {"agent": agent.name, "label": agent.label, "seed": seed, "final_cash": env.cash,
                "profit": env.profit, "opponent_cash": obs["opponent_cash"], "days": len(records),
-               "daily_cash": [r["cash"] for r in records], "records": records, **totals}
+               "daily_cash": [r["cash"] for r in records], "records": records, "final": snapshot(obs), **totals}
     if f:
-        f.write(json.dumps({"type": "summary", **{k: v for k, v in summary.items() if k != "records"},
-                            "final": snapshot(obs)}) + "\n")
+        f.write(json.dumps({"type": "summary", **{k: v for k, v in summary.items() if k != "records"}}) + "\n")
         f.close()
     agent.end_episode(summary)
     return summary

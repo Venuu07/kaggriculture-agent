@@ -71,10 +71,14 @@ def sell_orders(obs: dict[str, Any], floor_frac: float = 0.65) -> dict[str, Any]
     return out
 
 
+MAX_HANDS = 10
+
+
 def hands_needed(obs: dict[str, Any], new_plots: int) -> int:
-    """About one helper per 7 tiles that need daily work (the farmer handles items)."""
+    """About one helper per 6 tiles that need daily work (the farmer handles items).
+    Hands are cheap (Fibonacci: 10 hands cost $143/day), dead plants are not."""
     work = sum(obs["crops_growing"].values()) + new_plots + sum(obs["animals"].values()) + obs["weeds"]
-    return max(0, min(6, math.ceil(work / 7)))
+    return max(0, min(MAX_HANDS, math.ceil(work / 6)))
 
 
 def animal_purchase(obs: dict[str, Any], cash_after: float, max_new: int = 6) -> dict[str, int]:
@@ -129,7 +133,8 @@ def strategic_plan(obs: dict[str, Any], params: dict[str, float] | None = None,
             spend += k * seed
     plan["sell"] = sell_orders(obs, params.get("sell_floor", 0.65))
     plan["fertilise"] = fertiliser_targets(obs)
-    plan["hands"] = hands_needed(obs, sum(plan["plant"].values()) + sum(plan.get("buy_animals", {}).values()))
+    plan["hands"] = min(MAX_HANDS, hands_needed(obs, sum(plan["plant"].values()) + sum(plan.get("buy_animals", {}).values()))
+                        + int(params.get("hands_bonus", 0)))
     return plan
 
 

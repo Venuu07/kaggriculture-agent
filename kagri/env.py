@@ -21,6 +21,7 @@ from typing import Any
 from .config import load_config
 from .engine import kaggriculture as kg
 from .engine.driver import BUILTIN_OPPONENTS, GameDriver
+from .economics import sale_proceeds
 from .foreman import Foreman, plant_ready
 from .plan import HARVEST_AGE, empty_plan, validate_plan
 
@@ -70,18 +71,20 @@ class FarmEnv:
         day = self.day
         foreman = Foreman(clean, day, self.last_day, self.cfg["foreman"]["final_day_sell_hour"])
         opp = BUILTIN_OPPONENTS.get(self.opponent_name, BUILTIN_OPPONENTS["pass"])
-        sales: dict[str, list[int]] = {}
+        sales: dict[str, list[float]] = {}  # item -> [units sold, revenue]
         while not self.game.done and self.game.obs0.day == day:
             obs0 = self.game.observation(0)
             action = foreman.act(obs0)
             shed_before = dict(obs0["private"]["shed"])
-            prices_before = dict(obs0["market"]["prices"])
+            inv_before = dict(obs0["market"]["inventory"])
             self.game.step([action, opp(self.game.observation(1))])
-            for o in action["market"]:
-                if o[0] == "SELL":
-                    sold = shed_before.get(o[1], 0) - self.game.observation(0)["private"]["shed"].get(o[1], 0)
-                    if sold > 0:
-                        sales.setdefault(o[1], [0, prices_before[o[1]]])[0] += sold
+            shed_after = self.game.observation(0)["private"]["shed"]
+            for item in {o[1] for o in action["market"] if o[0] == "SELL"}:
+                sold = shed_before.get(item, 0) - shed_after.get(item, 0)
+                if sold > 0:
+                    s = sales.setdefault(item, [0, 0.0])
+                    s[0] += sold
+                    s[1] += sale_proceeds(item, sold, inv_before[item])[0]
         self.price_history.append(dict(self.game.obs0.market["prices"]))
         reward = self.cash - cash0
         info = {"day": day, "plan": clean, "rejected": rejected, "events": self.today_events,

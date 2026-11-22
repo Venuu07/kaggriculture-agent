@@ -32,5 +32,8 @@ class Agent:
     def decide(self, obs: dict[str, Any], env: FarmEnv) -> Decision:
         raise NotImplementedError
 
+    def after_step(self, info: dict[str, Any], reward: float) -> None:
+        """Called after each day with the environment's info (used for short-term memory)."""
+
     def end_episode(self, summary: dict[str, Any]) -> None:
         """Called after the last day (used for reflection)."""

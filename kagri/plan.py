@@ -39,7 +39,7 @@ def hire_cost_total(n: int) -> int:
     return sum(kg._hire_cost(i) for i in range(n))
 
 
-def validate_plan(plan: Any, state: dict[str, Any], max_hands: int = 6) -> tuple[dict[str, Any], list[str]]:
+def validate_plan(plan: Any, state: dict[str, Any], max_hands: int = 10) -> tuple[dict[str, Any], list[str]]:
     """Clean a plan against the current farm state.
 
     Returns (clean_plan, rejections). Never raises: anything invalid is dropped or trimmed
