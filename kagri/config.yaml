@@ -1,0 +1,50 @@
+# Kaggriculture agent project configuration.
+# Crop / animal / market numbers mirror the official engine (kagri/engine/kaggriculture.py);
+# they are listed here so the project is easy to explain. Changing them here does NOT
+# change the engine rules - the engine stays faithful to the competition.
+
+game:
+  episode_steps: 720        # 30 days x 24 turns (competition default)
+  turns_per_day: 24
+  starting_money: 3000
+  board_size: 10
+  opponent: starter         # player 2 on the shared market: starter | pass | random
+
+crops:                      # seed cost, base price, days to harvest (watered), max yield
+  WHEAT:      {seed: 10,  base_price: 25,  harvest_age: 4,  yield_watered: 4, yield_fertilised: 6, ongoing: false}
+  CARROT:     {seed: 20,  base_price: 35,  harvest_age: 3,  yield_watered: 3, yield_fertilised: 4, ongoing: false}
+  TOMATO:     {seed: 50,  base_price: 60,  harvest_age: 11, yield_watered: 4, yield_fertilised: 8, ongoing: true}
+  STRAWBERRY: {seed: 100, base_price: 120, harvest_age: 16, yield_watered: 4, yield_fertilised: 8, ongoing: true}
+  MELON:      {seed: 80,  base_price: 250, harvest_age: 10, yield_watered: 6, yield_fertilised: 6, ongoing: false}
+
+animals:                    # cost, product, product base price, days between yields
+  GOOSE: {cost: 300, product: EGG,  base_price: 50,  first_yield: 4, interval: 1}
+  COW:   {cost: 400, product: MILK, base_price: 160, first_yield: 8, interval: 2}
+  SHEEP: {cost: 500, product: WOOL, base_price: 200, first_yield: 6, interval: 3}
+
+# Our extension (NOT in the competition): weather + random events. Turn off with
+# `enabled: false` (or `--no-events` on the CLI) for competition-faithful runs.
+events:
+  enabled: true
+  forecast_days: 3
+  forecast_accuracy: 0.8    # chance each forecast day is correct
+  weather_probs:            # daily weather distribution
+    sunny: 0.55
+    cloudy: 0.2
+    heavy_rain: 0.12        # waters every plant for free
+    drought: 0.13           # no grace day: any plant not watered today dies tonight
+  pest_outbreak_prob: 0.06  # kills ~15% of growing plants (fertilised plants resist)
+  price_shock_prob: 0.08    # sudden glut or shortage of one product
+
+foreman:                    # the deterministic executor that turns a daily plan into moves
+  max_hands: 6
+  final_day_sell_hour: 12   # on the last day, units drop stock at the shed from this hour
+
+llm:
+  max_tool_calls_per_turn: 4
+  max_json_retries: 2
+  temperature: 0.2
+
+evaluation:
+  seeds: [0, 1, 2, 3, 4]
+  reflection_episodes: 3
