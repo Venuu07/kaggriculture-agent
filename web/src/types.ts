@@ -84,3 +84,11 @@ export interface PlayDay {
   you: { plan: Plan; rejected: string[]; reward: number };
   ai: { day: number; trace: TraceStep[]; plan: Plan; rejected: string[]; reward: number; tokens: number; latency_s: number; llm_calls: number; fallback: boolean };
 }
+
+export interface ScenarioInfo { id: string; title: string; blurb: string; event_days: number[] }
+export interface ScenarioRun {
+  scenario: string; agent: string; label: string; seed: number; profit: number; daily_profit: number[];
+  calm_profit: number; resilience_pct: number | null;
+  notes: { day: number; events: string[]; weather: string; thought: string; plan: Plan; reward: number }[];
+}
+export interface ScenarioResult { scenario: string; title: string; blurb: string; seed: number; event_days: number[]; runs: ScenarioRun[] }

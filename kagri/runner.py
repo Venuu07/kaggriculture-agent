@@ -18,9 +18,10 @@ def snapshot(obs: dict[str, Any]) -> dict[str, Any]:
 
 
 def run_episode(agent: Agent, seed: int = 0, log_path: Path | None = None, events: bool | None = None,
-                on_day: Any = None, meta: dict[str, Any] | None = None, weather: str | None = None) -> dict[str, Any]:
+                on_day: Any = None, meta: dict[str, Any] | None = None, weather: str | None = None,
+                scenario: dict[str, Any] | None = None) -> dict[str, Any]:
     """Play a full season. Returns a summary; writes one JSON line per day if `log_path` is set."""
-    env = FarmEnv(events=events, weather=weather)
+    env = FarmEnv(events=events, weather=weather, scenario=scenario)
     obs = env.reset(seed)
     agent.begin_episode(seed)
     records: list[dict[str, Any]] = []

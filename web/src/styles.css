@@ -453,3 +453,21 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .season-over.big { text-align: center; padding: 26px; }
 .season-over.big h2 { font-size: 30px; font-weight: 520; margin-bottom: 6px; }
 @media (max-width: 1100px) { .planner-grid, .scoreboard, .play-cfg, .tips { grid-template-columns: 1fr; } .sb-side.right, .sb-mid { text-align: left; } }
+
+/* --------------------------------------------------------------------- lab */
+.lab { display: flex; flex-direction: column; gap: 16px; }
+.scen-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.scen { text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 4px; transition: border-color 0.15s, transform 0.15s; }
+.scen:hover { border-color: var(--line-strong); transform: translateY(-1px); }
+.scen.on { border-color: var(--ink); box-shadow: inset 3px 0 0 var(--terracotta); }
+.scen b { font-family: var(--serif); font-size: 17px; font-weight: 560; }
+.scen span { color: var(--muted); font-size: 13px; }
+.findings.three { grid-template-columns: repeat(3, 1fr); }
+.lab-ctl { display: flex; gap: 10px; align-items: center; }
+.lab-ctl input { width: 70px; margin-left: 6px; }
+.reactions { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.reactions li { display: grid; grid-template-columns: 70px 1fr; gap: 12px; }
+.r-day { font-family: var(--serif); font-size: 17px; color: var(--muted); }
+.r-thought { font-family: var(--serif); font-size: 15px; margin: 8px 0; }
+@media (max-width: 1100px) { .scen-cards, .findings.three { grid-template-columns: 1fr; } }

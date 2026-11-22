@@ -32,7 +32,8 @@ class FarmEnv:
     """Gym-style farm environment. Deterministic given a seed."""
 
     def __init__(self, events: bool | None = None, opponent: str | None = None,
-                 config: dict[str, Any] | None = None, weather: str | None = None) -> None:
+                 config: dict[str, Any] | None = None, weather: str | None = None,
+                 scenario: dict[str, Any] | None = None) -> None:
         self.cfg = config or load_config()
         g = self.cfg["game"]
         self.turns_per_day = int(g["turns_per_day"])
@@ -47,6 +48,11 @@ class FarmEnv:
         self.price_history: list[dict[str, int]] = []
         self.event_log: list[dict[str, Any]] = []
         self.me = 0  # which seat this view controls (0 or 1); see view()
+        # A scripted crisis (kagri/scenarios.py): fixed weather days, pest days and price shocks.
+        # When set, random pests and shocks are switched off so the experiment is controlled.
+        self.scenario: dict[str, Any] = scenario or {}
+        if self.scenario:
+            self.events_on = True
         self.real_weather: dict[str, Any] | None = None
         if weather:
             from .realweather import load_season
@@ -264,7 +270,15 @@ class FarmEnv:
         rng = random.Random(self.seed * 7919 + 17)
         probs = self.cfg["events"]["weather_probs"]
         names = list(probs)
-        return [rng.choices(names, weights=[probs[n] for n in names])[0] for _ in range(self.n_days)]
+        days = [rng.choices(names, weights=[probs[n] for n in names])[0] for _ in range(self.n_days)]
+        if self.scenario:
+            base = self.scenario.get("base_weather")
+            if base:
+                days = [base] * self.n_days
+            for d, w in self.scenario.get("weather", {}).items():
+                if 0 <= int(d) < self.n_days:
+                    days[int(d)] = w
+        return days
 
     def forecast(self) -> list[dict[str, Any]]:
         """Noisy weather forecast for the next few days (deterministic per seed)."""
@@ -301,17 +315,25 @@ class FarmEnv:
             notes.append("Heavy rain watered every plant for free.")
         if weather == "drought":
             notes.append("Drought: any plant not watered today will die tonight.")
-        if rng.random() < ev["pest_outbreak_prob"]:
+        scripted = bool(self.scenario)
+        pest_today = (day in self.scenario.get("pests", [])) if scripted else rng.random() < ev["pest_outbreak_prob"]
+        pest_rate = float(self.scenario.get("pest_rate", 0.15)) if scripted else 0.15
+        if pest_today:
             killed = 0
             for farm in o.farms:
                 for y, row in enumerate(farm["tiles"]):
                     for x, t in enumerate(row):
                         if (isinstance(t, dict) and t.get("kind") == "PLANT"
-                                and t["fertilized_until_day"] < day and rng.random() < 0.15):
+                                and t["fertilized_until_day"] < day and rng.random() < pest_rate):
                             farm["tiles"][y][x] = {"kind": "WEED"}
                             killed += 1
             notes.append(f"Pest outbreak destroyed {killed} unprotected plants (fertilised plants resist).")
-        if rng.random() < ev["price_shock_prob"]:
+        for item, mult in (self.scenario.get("shocks", {}).get(str(day), []) if scripted else []):
+            o.market["inventory"][item] += int(kg.MARKET_PARAMS[item]["T"] * mult)
+            kg._refresh_prices(o.market)
+            kind = "glut" if mult > 0 else "shortage"
+            notes.append(f"Market shock: {kind} of {item.lower()}, price now ${o.market['prices'][item]}.")
+        if not scripted and rng.random() < ev["price_shock_prob"]:
             item = rng.choice([p for p in kg.PRODUCTS if p != "FERTILIZER"])
             params = kg.MARKET_PARAMS[item]
             glut = rng.random() < 0.5

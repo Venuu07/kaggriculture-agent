@@ -8,11 +8,12 @@ import { MindFeed } from "./components/MindFeed";
 import { PlayView } from "./components/PlayView";
 import { PlanChips } from "./components/PlanChips";
 import { ResearchView } from "./components/ResearchView";
+import { ScenarioLab } from "./components/ScenarioLab";
 import { ResultsView } from "./components/ResultsView";
 import { WEATHER_ICON, agentColor as colorOf, money, titleCase } from "./constants";
 import type { DayRecord, FarmState, ProviderInfo, RunHeader, RunInfo, WeatherSeason } from "./types";
 
-type Tab = "farm" | "mind" | "play" | "arena" | "research" | "results" | "how";
+type Tab = "farm" | "mind" | "play" | "scenarios" | "arena" | "research" | "results" | "how";
 type Mode = "replay" | "live";
 
 const AGENTS = [
@@ -192,7 +193,7 @@ export default function App() {
             </div>
           </div>
           <nav className="tabs">
-            {([["farm", "Live farm"], ["mind", "Agent's mind"], ["play", "Play vs AI"], ["arena", "Arena"], ["research", "Research"], ["results", "Results"], ["how", "How it works"]] as [Tab, string][]).map(([k, l]) => (
+            {([["farm", "Live farm"], ["mind", "Agent's mind"], ["play", "Play vs AI"], ["scenarios", "Scenario Lab"], ["arena", "Arena"], ["research", "Research"], ["results", "Results"], ["how", "How it works"]] as [Tab, string][]).map(([k, l]) => (
               <button key={k} className={tab === k ? "on" : ""} onClick={() => setTab(k)}>{l}</button>
             ))}
           </nav>
@@ -271,6 +272,7 @@ export default function App() {
             </div>
           )}
           {tab === "play" && <PlayView seasons={seasons} />}
+          {tab === "scenarios" && <ScenarioLab />}
           {tab === "arena" && <ArenaView speed={speed} />}
           {tab === "research" && <ResearchView />}
           {tab === "results" && <ResultsView />}
