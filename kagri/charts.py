@@ -11,8 +11,8 @@ import matplotlib.pyplot as plt  # noqa: E402
 import pandas as pd  # noqa: E402
 
 # Validated categorical palette (fixed order, one colour per agent - never cycled).
-COLORS = {"random": "#2a78d6", "greedy": "#eb6834", "llm_single": "#1baf7a", "llm_multi": "#eda100"}
-INK, MUTED, GRID, SURFACE = "#0b0b0b", "#52514e", "#e4e3df", "#fcfcfb"
+COLORS = {"random": "#3567b5", "greedy": "#c4532a", "llm_single": "#d19516", "llm_multi": "#2e7d3f"}
+INK, MUTED, GRID, SURFACE = "#1c2218", "#6e6c5f", "#e6e0d1", "#fbf9f3"
 
 
 def _style(ax: plt.Axes, title: str) -> None:

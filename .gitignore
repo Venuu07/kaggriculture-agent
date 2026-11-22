@@ -6,3 +6,4 @@ __pycache__/
 .pytest_cache/
 .streamlit/secrets.toml
 runs/live_*.jsonl
+web/node_modules/
