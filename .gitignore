@@ -7,3 +7,5 @@ __pycache__/
 .streamlit/secrets.toml
 runs/live_*.jsonl
 web/node_modules/
+# Recordings in progress; finished ones are added with git add -f
+runs/recorded_*.jsonl
