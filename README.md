@@ -11,9 +11,22 @@ optional **multi-agent team** (Planner, Market Analyst, Agronomist and a Manager
 
 ![Live farm](docs/img/ui_farm.png)
 
-| Agent's mind | Results |
+| Agent's mind | Arena: two farmers, one market |
 |---|---|
-| ![Agent's mind](docs/img/ui_mind.png) | ![Results](docs/img/ui_results.png) |
+| ![Agent's mind](docs/img/ui_mind.png) | ![Arena](docs/img/ui_arena.png) |
+
+## Research findings
+
+Four experiments, each reproducible with one command (full write-up: [docs/RESEARCH.md](docs/RESEARCH.md)):
+
+| Question | Finding | Command |
+|---|---|---|
+| RQ1: Which component earns the money? | **Look-ahead simulation is worth 29% of profit**, land 26%, animals 19%, the team 11%, glut-awareness 10% | `python -m kagri.ablation` |
+| RQ2: Can the agent learn from its own seasons? | **Verified reflection** (lessons tested in simulation before adoption) lifts a novice **+27%** on held-out seasons and rejects lessons that don't transfer | `python -m kagri.reflection` |
+| RQ3: What does a rival on the same market cost? | A smart agent facing a copy of itself loses **~45% of its profit** (shared-market gluts) | `python -m kagri.arena` |
+| RQ4: Who wins head-to-head? | The single agent beats the higher-earning team 6/6 times: **planning with a wrong opponent model is worse than planning less** | `python -m kagri.arena` |
+
+![Research tab](docs/img/ui_research.png)
 
 ## Results (5 seeds, weather and events on)
 
@@ -75,6 +88,11 @@ Then open `.env` and paste your key (for example `GEMINI_API_KEY=...`, with `LLM
 |---|---|
 | **Run the demo** (opens http://localhost:8000) | `python -m kagri.serve` |
 | Evaluate every agent (about 1 min offline) | `python -m kagri.evaluate` |
+| Ablation study (RQ1) | `python -m kagri.ablation` |
+| Verified reflection (RQ2) | `python -m kagri.reflection` |
+| Arena tournament (RQ3, RQ4) | `python -m kagri.arena` |
+| Fetch real weather for a district (needs internet once) | `python -m kagri.realweather --district anantapur --start 2025-07-01` |
+| Evaluate under real weather | `python -m kagri.evaluate --weather anantapur_2025-07-01` |
 | Quicker evaluation | `python -m kagri.evaluate --seeds 2 --reflection-episodes 0` |
 | Competition-faithful (no weather) | `python -m kagri.evaluate --no-events` |
 | Evaluate with a real LLM (slow, rate limited) | `python -m kagri.evaluate --provider gemini --seeds 1 --agents greedy,llm_single --reflection-episodes 0` |
@@ -93,7 +111,10 @@ the free tier's rate limit, `LLM_MIN_INTERVAL_S=4` keeps a single-agent season a
 - **Live**: pick an agent, provider and seed, then press Start. If the chosen provider has no
   key, the app switches to the offline reasoner and says so.
 - **Tabs**: Live farm (animated grid, weather, prices, profit), Agent's mind (every thought, tool
-  call and decision), Results (evaluation charts and lessons), How it works (architecture).
+  call and decision), Arena (two farms on one market, side by side), Research (the four
+  findings), Results (evaluation charts and lessons), How it works (architecture).
+- **Real weather**: after `python -m kagri.realweather --district <name>`, Live mode can run a
+  season on real historical weather (date, rainfall and temperature shown on screen).
 
 ## How it works (short)
 
@@ -125,9 +146,12 @@ kagri/
   llm/           providers (Gemini, Groq, OpenAI, Claude) + offline reasoner
   runner.py      play a season, JSONL logs     evaluate.py / charts.py   evaluation
   record.py      record a real-LLM season      server.py / serve.py      API + UI server
+  ablation.py    RQ1 ablation study            reflection.py             RQ2 verified reflection
+  arena.py       RQ3/RQ4 two-player tournament realweather.py            real historical weather
   config.yaml    every tunable number
 web/             React + Vite + TypeScript UI (web/dist is the committed build)
-runs/            recorded seasons (JSONL) for replay
+runs/            recorded seasons and arena matches (JSONL) for replay
+data/weather/    cached real-weather seasons
 results/         CSVs and PNG charts
 memory/          long-term lessons written by reflection
 docs/            competition notes, architecture, slides/report outlines, viva, demo script, learning guide
@@ -150,7 +174,7 @@ tests/           pytest suite
 
 ## Docs for the team
 
-[PPT outline](docs/PPT_OUTLINE.md) · [Report outline](docs/REPORT_OUTLINE.md) ·
+[Research write-up](docs/RESEARCH.md) · [PPT outline](docs/PPT_OUTLINE.md) · [Report outline](docs/REPORT_OUTLINE.md) ·
 [Viva Q&A](docs/VIVA.md) · [Demo script](docs/DEMO_SCRIPT.md) · [Learn the project](docs/LEARN.md)
 
 ## Credits

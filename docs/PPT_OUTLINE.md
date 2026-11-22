@@ -219,7 +219,46 @@ Speaker notes: Be upfront about the flat reflection curve. The mechanism works (
 
 ---
 
-## Slide 19: Demo
+## Slide 19: Research question 1: what earns the money? (ablation)
+- Switch off one component at a time, 5 seeds each; full system earns $88,794
+- No look-ahead: −28.7% (the most valuable skill)
+- No land expansion: −25.6% · No animals: −19.1%
+- No team: −10.6% · No glut-awareness: −10.5% · Max 4 hands: −4.8%
+- Every component costs profit on 5/5 seeds (labour: 4/5)
+- Visual: `results/ablation.png`
+
+Speaker notes: "An ablation is how researchers prove that each part matters: remove it and measure the damage. Testing a plan in simulation before acting is worth almost a third of the profit."
+
+## Slide 20: Research question 2: can the agent learn? (verified reflection)
+- Lessons are hypotheses: each maps to a concrete strategy change
+- Each lesson is simulated on 4 validation seasons; kept only if it wins by at least 1%
+- Scored on 4 held-out seasons the agent never trained on
+- Novice $53.3k → $67.6k after one season (+27%): it learned to buy land
+- It rejected lessons that do not generalise ("plant fewer melons": −1.9%)
+- Visual: `results/reflection_verified.png`
+
+Speaker notes: "Plain reflection just writes lessons into the prompt and hopes. We verify every lesson before trusting it, so the agent can only get better, never worse."
+
+## Slide 21: Research question 3: the price of competition (Arena)
+- Two farms, one shared market; every sale moves the price for both
+- Each agent plays Kaggle's starter bot, then a copy of itself (3 seeds, both seats)
+- Smart agents lose ~45% of profit against a twin; Greedy loses 23%, Random 17%
+- Two optimisers chase the same premium crops and crash those prices together
+- Visual: `results/arena.png`, `docs/img/ui_arena.png`
+
+Speaker notes: "The better the agent, the more a clone hurts it. This is a real economics effect: competitors who think alike destroy each other's margins."
+
+## Slide 22: Research question 4: who wins head-to-head?
+- Round-robin tournament, rated with Bradley-Terry (Kaggriculture's own method)
+- Ratings: single 2434 · multi 2124 · Greedy 1815 · Random 979 · Kaggle bot 147
+- Surprise: the single agent beats the higher-earning team in 6/6 games
+- Cause: look-ahead models the rival as the weak Kaggle bot, so the team over-invests
+- Lesson: planning with a wrong opponent model is worse than planning less
+- Future work: opponent-aware look-ahead
+
+Speaker notes: "This was the most interesting result. Average profit and winning are different goals, exactly like in the Kaggle ladder."
+
+## Slide 23: Demo
 - Images: `docs/img/ui_farm.png`, `docs/img/ui_mind.png`, `docs/img/ui_results.png`, `docs/img/ui_how.png`
 - Command: `python -m kagri.serve`, then open http://localhost:8000
 - Replay mode: recorded seasons, no internet needed
@@ -230,7 +269,7 @@ Speaker notes: Switch to the live demo here (see docs/DEMO_SCRIPT.md).
 
 ---
 
-## Slide 20: Limitations
+## Slide 24: Limitations
 - LLM numbers reported here come from the offline reasoner, not a language model
 - Daily granularity: the agent cannot micro-manage individual turns
 - Opponent is a simple built-in bot; the real competition is head-to-head against strong agents
@@ -242,7 +281,7 @@ Speaker notes: Showing limitations openly builds trust with the panel.
 
 ---
 
-## Slide 21: Conclusion and future scope
+## Slide 25: Conclusion and future scope
 - An agentic design (tools + look-ahead + guardrails + coordination) beats a classic heuristic by about 3x
 - Every decision is explainable and auditable in the reasoning trace
 - Future: evaluate real LLMs over many seeds; compare with an RL policy (PPO) on the same environment
@@ -253,7 +292,7 @@ Speaker notes: End on the general lesson: give an LLM good tools and a simulator
 
 ---
 
-## Slide 22: References
+## Slide 26: References
 1. S. Yao et al., "ReAct: Synergizing Reasoning and Acting in Language Models," ICLR 2023 (arXiv:2210.03629, 2022).
 2. N. Shinn et al., "Reflexion: Language Agents with Verbal Reinforcement Learning," NeurIPS 2023.
 3. T. Schick et al., "Toolformer: Language Models Can Teach Themselves to Use Tools," NeurIPS 2023.

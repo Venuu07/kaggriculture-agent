@@ -240,7 +240,7 @@ baselines) -> Guardrails (`kagri/plan.py`) -> Foreman (`kagri/foreman.py`) -> Of
 
 ## Chapter 6: Testing
 
-14 automated tests, run with `python -m pytest -q` (all pass).
+20 automated tests, run with `python -m pytest -q` (all pass). In addition to the table below: `tests/test_arena.py` (shared market, seat views, Bradley-Terry), `tests/test_reflection.py` (lesson hypotheses), `tests/test_realweather.py` (weather mapping, env hook).
 
 | File | Test | What it checks |
 |---|---|---|
@@ -311,7 +311,27 @@ near $3.2k to $3.5k in every run.
   decisions. We report this honestly; the mechanism is designed for real LLMs, whose effect
   must be measured with a real-LLM run.
 
-### 7.7 Threats to validity
+### 7.7 Ablation study (RQ1; `results/ablation.png`, `kagri/ablation.py`)
+- Table: full $88,794; no look-ahead −28.7%; no land −25.6%; no animals −19.1%; no team −10.6%;
+  no glut-awareness −10.5%; max 4 hands −4.8%. Every component worse on 5/5 seeds (labour 4/5).
+
+### 7.8 Verified reflection (RQ2; `results/reflection_verified.png`, `kagri/reflection.py`)
+- Novice start (no land, no animals); 6 evidence-driven lesson templates; 4 validation and
+  4 held-out test seasons; adopt only if validation profit rises by at least 1%.
+- Held-out profit $53,273 → $67,626 (+27%) after adopting "buy land"; later lessons rejected
+  (animals +0.4%, labour +0.9%, look-ahead −0.8%, glut −1.9%).
+
+### 7.9 Arena: price of competition and head-to-head ratings (RQ3, RQ4; `kagri/arena.py`)
+- Profit vs Kaggle starter bot vs a copy of itself: single $72,474 → $39,881 (−45%);
+  multi $84,355 → $47,404 (−44%); Greedy −23%; Random −17%.
+- Bradley-Terry ratings: single 2434, multi 2124, Greedy 1815, Random 979, starter 147.
+- Single beats multi 6/6 head-to-head: the look-ahead models the rival as the starter bot.
+
+### 7.10 Real-weather mode (`kagri/realweather.py`)
+- Historical daily weather for Indian districts from the Open-Meteo archive, mapped to game weather.
+- Insert a run here if fetched (e.g. Anantapur, July 2025) and compare with simulated weather.
+
+### 7.11 Threats to validity
 - Small number of seeds; high variance for the agents.
 - Offline reasoner is hand-designed, so its strength reflects our domain rules.
 - Weak opponent; weather layer is our own.

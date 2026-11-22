@@ -80,3 +80,53 @@ The provider retries network errors and rate limits with back-off. If it still f
 
 ### 25. What would you do with more time?
 Record and evaluate real-LLM runs (Gemini, Claude) on more seeds, and measure reflection properly. Add native function calling per provider. Use a better follow-up policy in `simulate_action`, or several, to value long-term investments. Improve the Foreman with proper task scheduling. Play against stronger opponents, or against itself, and package the agent as a Kaggle submission. Then compare against an RL baseline trained on the same environment.
+
+## Research questions
+
+### 26. What is an ablation study and what did yours show?
+An ablation study removes one part of a system at a time and measures how much worse it gets,
+so each part's contribution is measured rather than assumed. We switched off look-ahead, land
+expansion, animals, the multi-agent team, glut-aware planting and labour, five seeds each.
+Look-ahead mattered most (−28.7% profit), then land (−25.6%) and animals (−19.1%). Every
+component reduced profit on all five seeds except the labour cap (four of five). Command:
+`python -m kagri.ablation`.
+
+### 27. How is "verified reflection" different from normal reflection?
+Normal reflection (Reflexion-style) writes lessons into the next prompt and trusts them. Ours
+treats each lesson as a hypothesis tied to a concrete strategy change, plays it on four
+validation seasons, and adopts it only if it wins by at least 1%. Progress is measured on four
+held-out seasons. Starting as a novice (no land, no animals), the agent learned "buy land" in one
+season (+27% held-out) and rejected lessons that did not transfer, like "plant fewer melons"
+(−1.9%). So reflection can only help, never harm.
+
+### 28. Isn't adopting lessons on validation seasons just overfitting?
+That is why there are three disjoint sets of seasons: training seasons produce the evidence,
+validation seasons decide adoption, and test seasons, never seen by either, report the score.
+The +27% is measured on the test seasons.
+
+### 29. What is the "price of competition"?
+In the Arena, two agents share one market. When a smart agent plays a copy of itself, both
+chase the same profitable crops and their sales crash the same prices, so each loses about 45%
+of the profit it makes against Kaggle's weak bot. Weaker strategies lose less (Greedy 23%,
+Random 17%) because they leave less on the table to fight over.
+
+### 30. Why does the single agent beat the multi-agent team head-to-head when the team earns more?
+The look-ahead tool simulates the rival as Kaggle's starter bot. The team relies on look-ahead
+more (8-day horizon, three candidate plans), so against a smart rival it over-invests in the same
+crops and suffers a deeper glut. Average profit and winning are different objectives; the
+competition ranked only wins. The fix is opponent-aware look-ahead, our main future work.
+
+### 31. What is Bradley-Terry and why use it?
+A model where each player has a strength p and the chance that A beats B is p_A / (p_A + p_B).
+We fit it from match results with the standard MM algorithm and show it on an Elo-like scale.
+Kaggriculture used Bradley-Terry for its final leaderboard, so our tournament mirrors the real
+competition's ranking.
+
+### 32. What is real-weather mode?
+`python -m kagri.realweather --district anantapur` downloads 30 days of real historical weather
+(rainfall, maximum temperature, evapotranspiration) for an Indian district from the free
+Open-Meteo archive and maps each day to the game's weather: heavy rain (15 mm or more), drought
+(evaporation exceeds rain by 6 mm or more, or 38°C or hotter with no rain), cloudy or sunny. The
+season is cached, so it then runs offline. It turns the game into a what-if tool: how would this
+strategy have done in Anantapur's July?
+

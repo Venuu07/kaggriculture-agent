@@ -255,3 +255,20 @@ python -m kagri.record --agent llm_single --provider gemini
 ```bash
 pytest
 ```
+
+## Bonus: the research layer (read after everything above)
+
+Think of these as science experiments you run on the farm:
+
+1. **Ablation** (`kagri/ablation.py`). Like checking what a car is worth without its engine, then
+   without its wheels. `VARIANTS` lists each switch; the offline reasoner reads switches such as
+   `no_lookahead` and `allow_land` from its params (`kagri/llm/offline.py`, `_candidates`).
+2. **Verified reflection** (`kagri/reflection.py`). A student writes down a lesson after a test,
+   but only keeps it if it helps on practice papers. `HYPOTHESES` are the lesson templates; `main`
+   runs train, validate, test.
+3. **Arena** (`kagri/arena.py`). Two farmers, one market. `FarmEnv.view(player)` lets the same game
+   be seen from either seat; `FarmEnv.step(plan, rival=...)` runs both Foremen in the same turns.
+   `bradley_terry` turns wins into ratings.
+4. **Real weather** (`kagri/realweather.py`). `classify_day` turns real rain and heat into the
+   game's weather; `FarmEnv(weather=...)` uses it instead of random weather.
+

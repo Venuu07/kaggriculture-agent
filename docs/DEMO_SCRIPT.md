@@ -115,7 +115,26 @@ Say:
 - Point at "Profit over the season": "The agents invest early, so they look worse until day 10, then pull away."
 - Reflection chart: "Honestly, reflection produced lessons but no measurable gain with the offline reasoner. Measuring it with a real LLM is our next step."
 
-## 7:30 - 9:00 · Live mode
+## 7:30 - 9:00 · Research: Arena and findings
+
+Open the **Arena** tab and press Play (speed about 1 second per day).
+
+Say:
+- "Here two farmers share one market: our multi-agent team on the left, Greedy on the right.
+  Every melon one sells lowers the price for the other."
+- Around day 12: "Greedy jumps far ahead when its melons ripen, almost $20k up. Our agent looks
+  like it is losing, because it has spent its cash on animals, land and strawberries."
+- Days 23-29: "Now the investments pay off. Our agent overtakes on day 28 and wins
+  $48.9k to $36.4k. That is delayed reward, which a greedy strategy cannot see."
+
+Open the **Research** tab and walk through the four numbers at the top:
+- "Look-ahead is worth 29% of profit: we proved it by switching it off."
+- "Verified reflection: the agent tests its own lessons before trusting them. A novice gains 27% on unseen seasons."
+- "Competition costs about 45%: two smart farmers crash each other's prices."
+- "Our surprise result: the single agent wins head-to-head against the higher-earning team, because
+  the team's simulator assumes a weak rival. Planning with the wrong opponent model is worse than planning less."
+
+## 9:00 - 9:30 · Live mode (optional, if time allows)
 
 In the sidebar click **Live**. Choose **LLM multi-agent**. For the provider, pick **Gemini** if your key works, otherwise the **Offline reasoner (no key)**. Seed 1, events on. Click **Start season**.
 
@@ -125,7 +144,7 @@ Say: "This is running now, not a recording. With Gemini, each day takes several 
 
 If you see the notice "GEMINI_API_KEY missing ... switched to the offline reasoner", say: "Without a key it switches safely to the offline reasoner. The demo never crashes."
 
-## 9:00 - 10:00 · Wrap up
+## 9:30 - 10:30 · Wrap up
 
 Toggle **Dark theme** once if you want a visual finish, then go back to **How it works**.
 
