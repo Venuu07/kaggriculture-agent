@@ -28,13 +28,15 @@ from .runner import run_episode
 AGENT_KEYS = ["random", "greedy", "llm_single", "llm_multi"]
 
 
-def make_agent(key: str, provider: str, memory_path: Path | None = None, reflection: bool = False) -> Agent:
+def make_agent(key: str, provider: str, memory_path: Path | None = None, reflection: bool = False,
+               test_before_act: bool = False) -> Agent:
     """Build an agent by key."""
     if key == "random":
         return RandomAgent()
     if key == "greedy":
         return GreedyAgent()
-    return LLMAgent(provider, multi=(key == "llm_multi"), reflection=reflection, memory_path=memory_path)
+    return LLMAgent(provider, multi=(key == "llm_multi"), reflection=reflection, memory_path=memory_path,
+                    test_before_act=test_before_act)
 
 
 def _row(summary: dict[str, Any], provider: str, key: str, episode: int = 1) -> dict[str, Any]:

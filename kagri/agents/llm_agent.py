@@ -66,7 +66,7 @@ class LLMAgent(Agent):
 
     def __init__(self, provider: Provider | str | None = None, multi: bool = False, reflection: bool = True,
                  memory_path: Path | None = None, overrides: dict[str, Any] | None = None,
-                 tag: str = "") -> None:
+                 tag: str = "", test_before_act: bool = False) -> None:
         self.provider = provider if isinstance(provider, Provider) else get_provider(provider)
         self.multi = multi
         self.reflection = reflection
@@ -77,6 +77,9 @@ class LLMAgent(Agent):
         mode = "multi" if multi else "single"
         self.name = f"llm_{mode}"
         self.overrides = dict(overrides or {})
+        self.test_before_act = test_before_act
+        if test_before_act and not tag:
+            tag = "test-before-act"
         self.label = f"LLM {mode}-agent ({self.provider.name})" + (f" · {tag}" if tag else "")
         self.ltm = LongTermMemory(f"{mode}_{self.provider.name}", memory_path)
         self.stm = ShortTermMemory()
@@ -122,6 +125,7 @@ class LLMAgent(Agent):
         messages = [{"role": "user", "content": day_message(obs, self.stm.render(), proposals)}]
         steps: list[dict[str, Any]] = []
         tool_calls = bad_json = forced = 0
+        nudged = False
         while True:
             ctx = {"role": role, "obs": obs, "env": env, "steps": steps, "params": self.params,
                    "proposals": proposals}
@@ -141,6 +145,17 @@ class LLMAgent(Agent):
             action = str(parsed.get("action", ""))
             args = parsed.get("args") if isinstance(parsed.get("args"), dict) else {}
             trace.append({"type": "thought", "agent": role, "text": thought})
+            if (action in ("take_action", "final") and self.test_before_act and role in ("single", "manager")
+                    and not nudged and tool_calls < max_tools
+                    and not any(st["name"] == "simulate_action" for st in steps)):
+                nudged = True
+                trace.append({"type": "guardrail", "agent": role,
+                              "text": "Test-before-act policy: simulate the plan before committing."})
+                messages += [{"role": "assistant", "content": reply.text},
+                             {"role": "user", "content": 'Before committing, test this plan with simulate_action '
+                              '(args: {"plan": <your plan>, "days": 8}), compare it with at least one alternative '
+                              'if you have tool calls left, then take_action with the better plan.'}]
+                continue
             if action in ("take_action", "final", "propose"):
                 plan = args.get("plan", args)
                 if not isinstance(plan, dict):

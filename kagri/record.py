@@ -24,13 +24,16 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--no-events", action="store_true")
     ap.add_argument("--reflection", action="store_true", help="use and update long-term lessons in memory/")
+    ap.add_argument("--test-before-act", action="store_true",
+                    help="policy: the agent must simulate a plan before committing to it")
     a = ap.parse_args(argv)
     ok, why = provider_ready(a.provider)
     if a.agent.startswith("llm") and not ok:
         raise SystemExit(f"Cannot record with {a.provider}: {why}. Copy .env.example to .env and add the key.")
-    agent = make_agent(a.agent, a.provider, reflection=a.reflection)
+    agent = make_agent(a.agent, a.provider, reflection=a.reflection, test_before_act=a.test_before_act)
     stamp = time.strftime("%Y%m%d_%H%M")
-    path = RUNS_DIR / f"recorded_{a.agent}_{a.provider}_seed{a.seed}_{stamp}.jsonl"
+    suffix = "_tba" if a.test_before_act else ""
+    path = RUNS_DIR / f"recorded_{a.agent}{suffix}_{a.provider}_seed{a.seed}_{stamp}.jsonl"
 
     def progress(rec: dict, obs: dict) -> None:
         flag = " (FALLBACK)" if rec["fallback"] else ""

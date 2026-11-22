@@ -60,3 +60,20 @@ def test_offline_multi_agent_and_reflection(tmp_path):
     assert {"planner", "market", "agronomist", "manager"} <= roles
     assert s["profit"] > 30000 and s["fallbacks"] == 0
     assert agent.ltm.entries and agent.ltm.entries[0]["lessons"]
+
+
+def test_test_before_act_policy_asks_for_a_simulation(tmp_path):
+    plan = {"plant": {"WHEAT": 5}, "hands": 1}
+    replies = [
+        json.dumps({"thought": "commit now", "action": "take_action", "args": {"plan": plan}}),
+        json.dumps({"thought": "ok, simulate", "action": "simulate_action", "args": {"plan": plan, "days": 3}}),
+        json.dumps({"thought": "go", "action": "take_action", "args": {"plan": plan}}),
+    ]
+    agent = LLMAgent(ScriptedLLM(replies), reflection=False, memory_path=tmp_path / "m.json", test_before_act=True)
+    env = FarmEnv()
+    obs = env.reset(0)
+    agent.begin_episode(0)
+    d = agent.decide(obs, env)
+    names = [t.get("name") for t in d.trace if t["type"] == "tool"]
+    assert names == ["simulate_action"] and any("Test-before-act" in t.get("text", "") for t in d.trace)
+    assert d.plan["plant"] == {"WHEAT": 5}
