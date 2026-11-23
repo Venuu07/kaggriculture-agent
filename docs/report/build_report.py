@@ -735,16 +735,16 @@ abbr = ('<div class="pb plainfront" id="abbr"><div class="fh">LIST OF ABBREVIATI
 CSS = """
 @page { size: A4; margin: 2.3cm 2.25cm 2.7cm 2.25cm; @bottom-center { content: none; } }
 @page front { @bottom-center { content: counter(page, lower-roman); font: 11pt 'Liberation Serif'; vertical-align: top; padding-top: 0.35cm; } }
-@page frontstart { counter-reset: page 1; }
+@page front:nth(1 of front) { counter-reset: page 1; @bottom-center { content: none; } }
 @page frontnonum { @bottom-center { content: none; } }
 #decl { page: frontnonum; }
 @page main { @bottom-center { content: counter(page); font: 11pt 'Liberation Serif'; vertical-align: top; padding-top: 0.35cm; } }
-@page mainstart { counter-reset: page 1; @bottom-center { content: counter(page); font: 11pt 'Liberation Serif'; vertical-align: top; padding-top: 0.35cm; } }
+@page main:nth(1 of main) { counter-reset: page 1; }
 html { font-family: 'Liberation Serif', 'Times New Roman', serif; font-size: 12pt; line-height: 1.75; color: #000; }
 .border { position: fixed; top: -1.55cm; left: -1.35cm; right: -1.35cm; bottom: -1.95cm; border: 1.1pt solid #000; }
 .pb { break-before: page; }
-.frontwrap { page: front; } .frontwrap > .first { page: frontstart; }
-.mainwrap { page: main; } .mainwrap > .chapter.first { page: mainstart; }
+.frontwrap { page: front; }
+.mainwrap { page: main; }
 p { text-align: justify; margin: 0 0 0.55em; hyphens: auto; }
 ul, ol { margin: 0.2em 0 0.7em 1.4em; padding-left: 0.6em; } li { text-align: justify; margin-bottom: 0.15em; }
 .cover { text-align: center; line-height: 1.5; }
